@@ -1,0 +1,24 @@
+c:\users\epita\documents\visual studio 2013\Projects\tiny42sh\tiny42sh\bin\Debug\tiny42sh.exe.config
+c:\users\epita\documents\visual studio 2013\Projects\tiny42sh\tiny42sh\obj\Debug\tiny42sh.csprojResolveAssemblyReference.cache
+c:\users\epita\documents\visual studio 2013\Projects\tiny42sh\tiny42sh\bin\Debug\tiny42sh.exe
+c:\users\epita\documents\visual studio 2013\Projects\tiny42sh\tiny42sh\bin\Debug\tiny42sh.pdb
+c:\users\epita\documents\visual studio 2013\Projects\tiny42sh\tiny42sh\obj\Debug\tiny42sh.exe
+c:\users\epita\documents\visual studio 2013\Projects\tiny42sh\tiny42sh\obj\Debug\tiny42sh.pdb
+F:\Mes dossiers\EPITA SUP\TP16 Shell\tiny42sh\tiny42sh\bin\Debug\tiny42sh.exe.config
+F:\Mes dossiers\EPITA SUP\TP16 Shell\tiny42sh\tiny42sh\obj\Debug\tiny42sh.exe
+F:\Mes dossiers\EPITA SUP\TP16 Shell\tiny42sh\tiny42sh\obj\Debug\tiny42sh.pdb
+F:\Mes dossiers\EPITA SUP\TP16 Shell\tiny42sh\tiny42sh\bin\Debug\tiny42sh.exe
+F:\Mes dossiers\EPITA SUP\TP16 Shell\tiny42sh\tiny42sh\bin\Debug\tiny42sh.pdb
+F:\Mes dossiers\EPITA SUP\TP16 Shell\tiny42sh\tiny42sh\obj\Debug\tiny42sh.csprojResolveAssemblyReference.cache
+F:\Mes dossiers\EPITA SUP\TP16 Shell Linux\tiny42sh\tiny42sh\bin\Debug\tiny42sh.exe.config
+F:\Mes dossiers\EPITA SUP\TP16 Shell Linux\tiny42sh\tiny42sh\obj\Debug\tiny42sh.exe
+F:\Mes dossiers\EPITA SUP\TP16 Shell Linux\tiny42sh\tiny42sh\obj\Debug\tiny42sh.pdb
+F:\Mes dossiers\EPITA SUP\TP16 Shell Linux\tiny42sh\tiny42sh\bin\Debug\tiny42sh.exe
+F:\Mes dossiers\EPITA SUP\TP16 Shell Linux\tiny42sh\tiny42sh\bin\Debug\tiny42sh.pdb
+F:\Mes dossiers\EPITA SUP\TP16 Shell Linux\tiny42sh\tiny42sh\obj\Debug\tiny42sh.csprojResolveAssemblyReference.cache
+D:\Info_project\C#_project\Apps\TP16 Shell Linux\tiny42sh\tiny42sh\bin\Debug\tiny42sh.exe.config
+D:\Info_project\C#_project\Apps\TP16 Shell Linux\tiny42sh\tiny42sh\obj\Debug\tiny42sh.exe
+D:\Info_project\C#_project\Apps\TP16 Shell Linux\tiny42sh\tiny42sh\obj\Debug\tiny42sh.pdb
+D:\Info_project\C#_project\Apps\TP16 Shell Linux\tiny42sh\tiny42sh\bin\Debug\tiny42sh.exe
+D:\Info_project\C#_project\Apps\TP16 Shell Linux\tiny42sh\tiny42sh\bin\Debug\tiny42sh.pdb
+D:\Info_project\C#_project\Apps\TP16 Shell Linux\tiny42sh\tiny42sh\obj\Debug\tiny42sh.csprojResolveAssemblyReference.cache

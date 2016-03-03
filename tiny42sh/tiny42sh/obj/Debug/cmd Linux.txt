@@ -1,0 +1,7 @@
+D:\Info_project\C#_project\Apps\TP16 Shell Linux\tiny42sh\tiny42sh\bin\Debug\cmd Linux.exe.config
+D:\Info_project\C#_project\Apps\TP16 Shell Linux\tiny42sh\tiny42sh\bin\Debug\cmd Linux.exe
+D:\Info_project\C#_project\Apps\TP16 Shell Linux\tiny42sh\tiny42sh\bin\Debug\cmd Linux.pdb
+D:\Info_project\C#_project\Apps\TP16 Shell Linux\tiny42sh\tiny42sh\obj\Debug\cmd Linux.exe
+D:\Info_project\C#_project\Apps\TP16 Shell Linux\tiny42sh\tiny42sh\obj\Debug\cmd Linux.pdb
+D:\Info_project\C#_project\Apps\TP16 Shell Linux\tiny42sh\tiny42sh\obj\Debug\cmd Linux.csprojResolveAssemblyReference.cache
+D:\Info_project\C#_project\Apps\TP16 Shell Linux\tiny42sh\tiny42sh\bin\Debug\listWifi.dll
