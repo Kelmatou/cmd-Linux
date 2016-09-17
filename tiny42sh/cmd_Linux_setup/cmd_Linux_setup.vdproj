@@ -15,13 +15,31 @@
     {
         "Entry"
         {
+        "MsmKey" = "8:_0801287D98A941CC8B610023C09CEF3F"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_08109C1713084AB9A948411A473189C2"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
+        "MsmKey" = "8:_0D0491D8AD274FAFAA357575C32C5EAF"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_10E9380B0BF740E3B4846454BC585FEF"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_1A7B5166273B46A2A667FF390C29A9F4"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -69,6 +87,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_4C601675F1264088AD297EB2F7FB354F"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_4FB223EE5D6C43E487907F68AEDC62BC"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -93,6 +117,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_74845EF85A4D4D6C93765F785123E78A"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_7851791592444268BD74CA2EB7C22619"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -111,8 +141,14 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_8A0069F24265B69F5889D9ADF5EFEAF2"
-        "OwnerKey" = "8:_ABF42714411C49C38533C52979CDA278"
+        "MsmKey" = "8:_8D8B056BDC1640BD95F3A695D702955E"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_94160A3C881042979E58D3E237A928A2"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -183,7 +219,13 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_C4C659B6FBE74939B7111E0A51D4DAB9"
+        "MsmKey" = "8:_C4F08D082A5D4E94B81995526D1B9393"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_C86635FD442A404C9D6C91BFF122852B"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -237,6 +279,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_E6AE3335BFCB4B8F8E7F69E867F2A9FF"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_E6DCC55C43D54460BDEBD1988EC6B2E2"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -255,32 +303,20 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_FC846B2C3ADD4D31896E405AF94E3017"
+        "MsmKey" = "8:_F30D05BE57774A56B1043D4C1BF0D705"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_FE155A2136BE197DF8B19EA2BD9A75C5"
-        "OwnerKey" = "8:_ABF42714411C49C38533C52979CDA278"
+        "MsmKey" = "8:_FAF87A726756417CA07903E7BA0B2A11"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_ABF42714411C49C38533C52979CDA278"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_FE155A2136BE197DF8B19EA2BD9A75C5"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_8A0069F24265B69F5889D9ADF5EFEAF2"
+        "MsmKey" = "8:_FC846B2C3ADD4D31896E405AF94E3017"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -378,6 +414,26 @@
         }
         "File"
         {
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_0801287D98A941CC8B610023C09CEF3F"
+            {
+            "SourcePath" = "8:..\\tiny42sh\\dictionary\\fr"
+            "TargetName" = "8:fr"
+            "Tag" = "8:"
+            "Folder" = "8:_32F87CC86384406B900654920608C34E"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_08109C1713084AB9A948411A473189C2"
             {
             "SourcePath" = "8:..\\tiny42sh\\cmd_Linux_icone.ico"
@@ -398,10 +454,50 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_0D0491D8AD274FAFAA357575C32C5EAF"
+            {
+            "SourcePath" = "8:..\\tiny42sh\\genius_data\\genius_data_zip"
+            "TargetName" = "8:genius_data_zip"
+            "Tag" = "8:"
+            "Folder" = "8:_7DB2532ED85A4DD981B636EE74AD4E3D"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_10E9380B0BF740E3B4846454BC585FEF"
             {
             "SourcePath" = "8:..\\tiny42sh\\genius_data\\genius_data_wikipedia"
             "TargetName" = "8:genius_data_wikipedia"
+            "Tag" = "8:"
+            "Folder" = "8:_7DB2532ED85A4DD981B636EE74AD4E3D"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_1A7B5166273B46A2A667FF390C29A9F4"
+            {
+            "SourcePath" = "8:..\\tiny42sh\\genius_data\\genius_data_reminder"
+            "TargetName" = "8:genius_data_reminder"
             "Tag" = "8:"
             "Folder" = "8:_7DB2532ED85A4DD981B636EE74AD4E3D"
             "Condition" = "8:"
@@ -558,6 +654,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_4C601675F1264088AD297EB2F7FB354F"
+            {
+            "SourcePath" = "8:..\\tiny42sh\\dictionary\\en"
+            "TargetName" = "8:en"
+            "Tag" = "8:"
+            "Folder" = "8:_32F87CC86384406B900654920608C34E"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_4FB223EE5D6C43E487907F68AEDC62BC"
             {
             "SourcePath" = "8:..\\tiny42sh\\genius_data\\genius_data_ls"
@@ -638,6 +754,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_74845EF85A4D4D6C93765F785123E78A"
+            {
+            "SourcePath" = "8:..\\tiny42sh\\genius_data\\genius_data_while"
+            "TargetName" = "8:genius_data_while"
+            "Tag" = "8:"
+            "Folder" = "8:_7DB2532ED85A4DD981B636EE74AD4E3D"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7851791592444268BD74CA2EB7C22619"
             {
             "SourcePath" = "8:..\\tiny42sh\\genius_data\\genius_data_yahoo"
@@ -698,18 +834,12 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_8A0069F24265B69F5889D9ADF5EFEAF2"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_8D8B056BDC1640BD95F3A695D702955E"
             {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:listWifi, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                }
-            "SourcePath" = "8:listWifi.dll"
-            "TargetName" = "8:"
+            "SourcePath" = "8:..\\tiny42sh\\genius_data\\genius_data_dice"
+            "TargetName" = "8:genius_data_dice"
             "Tag" = "8:"
-            "Folder" = "8:_FCCF278C672F4C5CB3F3EFEBE683A004"
+            "Folder" = "8:_7DB2532ED85A4DD981B636EE74AD4E3D"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -721,7 +851,27 @@
             "PackageAs" = "3:1"
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_94160A3C881042979E58D3E237A928A2"
+            {
+            "SourcePath" = "8:..\\tiny42sh\\genius_data\\genius_data_tree"
+            "TargetName" = "8:genius_data_tree"
+            "Tag" = "8:"
+            "Folder" = "8:_7DB2532ED85A4DD981B636EE74AD4E3D"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_990073DFDE204379833617997D19549F"
@@ -924,12 +1074,32 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_C4C659B6FBE74939B7111E0A51D4DAB9"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_C4F08D082A5D4E94B81995526D1B9393"
             {
-            "SourcePath" = "8:..\\tiny42sh\\bin\\Debug\\shutdown.bat"
-            "TargetName" = "8:shutdown.bat"
+            "SourcePath" = "8:..\\tiny42sh\\genius_data\\genius_data_ascii"
+            "TargetName" = "8:genius_data_ascii"
             "Tag" = "8:"
-            "Folder" = "8:_A62360B31E184282A0C0344B2CCBE450"
+            "Folder" = "8:_7DB2532ED85A4DD981B636EE74AD4E3D"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_C86635FD442A404C9D6C91BFF122852B"
+            {
+            "SourcePath" = "8:..\\tiny42sh\\genius_data\\genius_data_for"
+            "TargetName" = "8:genius_data_for"
+            "Tag" = "8:"
+            "Folder" = "8:_7DB2532ED85A4DD981B636EE74AD4E3D"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -1104,6 +1274,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_E6AE3335BFCB4B8F8E7F69E867F2A9FF"
+            {
+            "SourcePath" = "8:..\\tiny42sh\\genius_data\\genius_data_if"
+            "TargetName" = "8:genius_data_if"
+            "Tag" = "8:"
+            "Folder" = "8:_7DB2532ED85A4DD981B636EE74AD4E3D"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_E6DCC55C43D54460BDEBD1988EC6B2E2"
             {
             "SourcePath" = "8:..\\tiny42sh\\bin\\Debug\\cmd.bat"
@@ -1164,6 +1354,46 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_F30D05BE57774A56B1043D4C1BF0D705"
+            {
+            "SourcePath" = "8:..\\tiny42sh\\genius_data\\genius_data_link"
+            "TargetName" = "8:genius_data_link"
+            "Tag" = "8:"
+            "Folder" = "8:_7DB2532ED85A4DD981B636EE74AD4E3D"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_FAF87A726756417CA07903E7BA0B2A11"
+            {
+            "SourcePath" = "8:..\\tiny42sh\\genius_data\\genius_data_hash"
+            "TargetName" = "8:genius_data_hash"
+            "Tag" = "8:"
+            "Folder" = "8:_7DB2532ED85A4DD981B636EE74AD4E3D"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_FC846B2C3ADD4D31896E405AF94E3017"
             {
             "SourcePath" = "8:..\\tiny42sh\\genius_data\\genius_data_time"
@@ -1182,32 +1412,6 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_FE155A2136BE197DF8B19EA2BD9A75C5"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:System.Windows, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a"
-                "ScatterAssemblies"
-                {
-                }
-            "SourcePath" = "8:System.Windows.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_FCCF278C672F4C5CB3F3EFEBE683A004"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
         }
@@ -1265,6 +1469,28 @@
                             "Property" = "8:_A34D03849BD84641893F9A061F24BE49"
                                 "Folders"
                                 {
+                                    "{9EF0B969-E518-4E46-987F-47570745A589}:_32F87CC86384406B900654920608C34E"
+                                    {
+                                    "Name" = "8:dictionary"
+                                    "AlwaysCreate" = "11:FALSE"
+                                    "Condition" = "8:"
+                                    "Transitive" = "11:FALSE"
+                                    "Property" = "8:_1104AF7CAA9D40AF8415B6FCD8FA0B6D"
+                                        "Folders"
+                                        {
+                                            "{9EF0B969-E518-4E46-987F-47570745A589}:_34875D1D89B644FBAACA0D8841559C8A"
+                                            {
+                                            "Name" = "8:personal"
+                                            "AlwaysCreate" = "11:FALSE"
+                                            "Condition" = "8:"
+                                            "Transitive" = "11:FALSE"
+                                            "Property" = "8:_BE1F5A4F8A9B4369AC6017236FC18E6B"
+                                                "Folders"
+                                                {
+                                                }
+                                            }
+                                        }
+                                    }
                                     "{9EF0B969-E518-4E46-987F-47570745A589}:_7DB2532ED85A4DD981B636EE74AD4E3D"
                                     {
                                     "Name" = "8:genius_data"
@@ -1321,15 +1547,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:cmd Linux"
-        "ProductCode" = "8:{73E2E559-1CFD-4A97-9066-26F7842E4E22}"
-        "PackageCode" = "8:{AC9BBF6A-01AE-49EC-A57E-B3BD45DC87BE}"
+        "ProductCode" = "8:{BD813998-18C9-4B0A-BC49-F33C6B0606B8}"
+        "PackageCode" = "8:{87BEFFE2-FF46-464C-BC65-3504F1858423}"
         "UpgradeCode" = "8:{8D446BE8-FB3D-4ABB-9491-2B9B9B0E0A45}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:2.1.9"
+        "ProductVersion" = "8:3.0.7"
         "Manufacturer" = "8:Kelmatou Apps"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -1339,7 +1565,7 @@
         "Keywords" = "8:"
         "ARPCOMMENTS" = "8:"
         "ARPURLINFOABOUT" = "8:"
-        "ARPPRODUCTICON" = "8:"
+        "ARPPRODUCTICON" = "8:_08109C1713084AB9A948411A473189C2"
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
         "UseSystemSearchPath" = "11:TRUE"
@@ -1442,7 +1668,7 @@
         }
         "Shortcut"
         {
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_C94A0BD095924AAB8D619A6AAE954B94"
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_BF0DB1EB3CCA4562AB4CEF072B94BFC9"
             {
             "Name" = "8:cmd Linux"
             "Arguments" = "8:"

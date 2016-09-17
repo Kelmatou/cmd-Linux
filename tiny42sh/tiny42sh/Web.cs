@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -419,6 +421,35 @@ namespace cmd_Linux
                 default:
                     return ("");
             }
+        }
+
+        static public string getWebPageCode(string url, string commandName = "")
+        {
+            string demand = "";
+            try
+            {
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                request.Method = "GET";
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                StreamReader reader = new StreamReader(response.GetResponseStream());
+
+                demand = reader.ReadToEnd();
+
+                reader.Close();
+                response.Close();
+            }
+            catch (Exception)
+            {
+                if(commandName == "")
+                {
+                    Console.WriteLine("> Network Error");   
+                }
+                else
+                {
+                    Console.WriteLine("> " + commandName + ": Network Error");
+                }
+            }
+            return (demand);
         }
     }
 }

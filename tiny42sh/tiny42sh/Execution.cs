@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.IO.Compression;
 using System.Security.Permissions;
 using Microsoft.VisualBasic.Devices;
 using System.Diagnostics;
@@ -17,30 +18,17 @@ namespace cmd_Linux
 {
     public static class Execution
     {
-        public static string version = "16_02_27_12_38 [2.1.9]"; //SI PLUS UNE VERSION BETA, PENSER A RETIRER LA COMMANDE /feedback!!!!
+        public static string version = "16_09_17_18_24 [3.0.0]"; //SI PLUS UNE VERSION BETA, PENSER A RETIRER LA COMMANDE /feedback!!!!
         public static string editor = "Antoine CLOP (Kelmatou Apps)";
 
-        #region APIs
-        [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto)]
-        private static extern bool ShowWindow(IntPtr hwnd, int nCmdShow);
-        [System.Runtime.InteropServices.DllImport("user32.dll")]
-        private static extern bool SetForegroundWindow(IntPtr hwnd);
-        [System.Runtime.InteropServices.DllImport("user32.dll")]
-        private static extern IntPtr SetFocus(IntPtr hwnd);
-        #endregion APIs //fonctions win32
-
-        static private int execute_command(ref string[][] input, int input_number, string[] cmd, string desktop_dir, string appdata_dir, ref bool working, ref bool superuser, ref long last_result, ref List<Genius_data> genius_data, ref bool script_enable, ref bool genius_enable, ref bool private_mode, ref int refresh_timer, ref bool auto_lock, ref bool auto_log, ref bool cmd_print_user, ref bool cmd_print_path, ref bool cmd_print_time, ref string[] previous_directory, ref int previous_directory_pointer, ref int max_genius_data)
+        static private int execute_command(ref string[][] input, int input_number, string[] cmd, string desktop_dir, string appdata_dir, ref bool working, ref bool superuser, ref long last_result, ref List<Genius_data> genius_data, ref bool script_enable, ref bool genius_enable, ref bool private_mode, ref int refresh_timer, ref bool auto_lock, ref bool auto_log, ref bool cmd_print_user, ref bool cmd_print_path, ref bool cmd_print_time, ref string[] previous_directory, ref int previous_directory_pointer, ref int max_genius_data, ref string language, ref List<Link> allLinks, ref NotificationManager notificationManager)
         {
             if (Interpreter.is_keyword(cmd[0]) != Interpreter.Keyword.None)
             {
                 if(!private_mode)
-                {
                     add_1_usage_to_genius_cmd(cmd[0], appdata_dir);
-                }
                 if(cmd.Length == 2 && cmd[1] == "?")
-                {
                     return (execute_help(new string[] { "help", cmd[0] }, appdata_dir));
-                }
                 else
                 {
                     switch (Interpreter.is_keyword(cmd[0]))
@@ -70,13 +58,9 @@ namespace cmd_Linux
                         case (Interpreter.Keyword.help):
                             return (execute_help(cmd, appdata_dir));
                         case (Interpreter.Keyword.launch):
-                            if(cmd.Length > 1 && cmd[1] == "/arg")
-                            {
-                                return (execute_launch_arg(cmd));
-                            }
-                            return (execute_launch(cmd));
+                            return (execute_launch(cmd, ref notificationManager, appdata_dir));
                         case (Interpreter.Keyword.shutdown):
-                            return (execute_shutdown(cmd));
+                            return (execute_shutdown(cmd, ref notificationManager, appdata_dir));
                         case (Interpreter.Keyword.info):
                             return (execute_info());
                         case (Interpreter.Keyword.cp):
@@ -91,9 +75,7 @@ namespace cmd_Linux
                             return (execute_home(desktop_dir, ref previous_directory, ref previous_directory_pointer));
                         case (Interpreter.Keyword.uninstall):
                             if (superuser)
-                            {
                                 return (execute_uninstall(appdata_dir));
-                            }
                             else
                             {
                                 Console.WriteLine("> cmd Linux: uninstall: access denied!");
@@ -128,14 +110,12 @@ namespace cmd_Linux
                         case (Interpreter.Keyword.ts):
                             return (execute_ts(cmd, appdata_dir));
                         case (Interpreter.Keyword.textedit):
-                            return (Textedit.execute_textedit(cmd));
+                            return (Textedit.execute_textedit(cmd, appdata_dir, language));
                         case (Interpreter.Keyword.script):
                             return (execute_script(cmd, appdata_dir, ref input, input_number));
                         case (Interpreter.Keyword.reset):
                             if (superuser)
-                            {
                                 return (execute_reset(cmd, appdata_dir, ref genius_data));
-                            }
                             else
                             {
                                 Console.WriteLine("> cmd Linux: reset: access denied!");
@@ -157,9 +137,7 @@ namespace cmd_Linux
                             return (execute_lock(cmd));
                         case (Interpreter.Keyword.option):
                             if (superuser)
-                            {
-                                return (execute_option(ref script_enable, ref refresh_timer, ref auto_lock, ref genius_enable, ref private_mode, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref max_genius_data, appdata_dir));
-                            }
+                                return (execute_option(ref script_enable, ref refresh_timer, ref auto_lock, ref genius_enable, ref private_mode, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref max_genius_data, ref language, appdata_dir));
                             else
                             {
                                 Console.WriteLine("> cmd Linux: option: access denied!");
@@ -181,8 +159,30 @@ namespace cmd_Linux
                             return (execute_news(cmd));
                         case (Interpreter.Keyword.tv):
                             return (execute_tv());
-                        case (Interpreter.Keyword.breakout):
-                            return (Breakout.execute_breakout());
+                        /*case (Interpreter.Keyword.breakout):
+                            return (Breakout.execute_breakout());*/
+                        case (Interpreter.Keyword.zip):
+                            return (execute_zip(cmd));
+                        case (Interpreter.Keyword.ascii):
+                            return (execute_ascii(cmd));
+                        case (Interpreter.Keyword.dice):
+                            return (execute_dice(cmd));
+                        case (Interpreter.Keyword.reminder):
+                            return (execute_reminder(cmd, appdata_dir, ref notificationManager));
+                        case (Interpreter.Keyword.link):
+                            return (execute_link(cmd, ref allLinks));
+                        case (Interpreter.Keyword.tree):
+                            return (execute_tree(cmd));
+                        case (Interpreter.Keyword.hash):
+                            return (execute_hash(cmd));
+                        case (Interpreter.Keyword.crypto):
+                            return (execute_crypto(cmd));
+                        case (Interpreter.Keyword.@if):
+                            return (execute_if(cmd, desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager));
+                        case (Interpreter.Keyword.@while):
+                            return (execute_while(cmd, desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager));
+                        case (Interpreter.Keyword.@for):
+                            return (execute_for(cmd, desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager));
                         case (Interpreter.Keyword.man):
                             return (execute_man(cmd));
                         case (Interpreter.Keyword.exit):
@@ -195,49 +195,39 @@ namespace cmd_Linux
                 }
             }
             if(Calculator.is_math_expression(cmd))
-            {
                 return(Calculator.execute_calculator(cmd, ref last_result));
-            }
             if(cmd.Length > 0 && File.Exists(appdata_dir + "/script_files/" + cmd[0]))
             {
                 if(cmd.Length == 2 && cmd[1] == "?")
-                {
                     return (execute_script(new string[3] { "script", "/display", cmd[0] }, appdata_dir, ref input, input_number));
-                }
                 return (execute_script(new string[2] { "script", cmd[0] }, appdata_dir, ref input, input_number));
             }
             if(cmd.Length > 0 && File.Exists(Directory.GetCurrentDirectory() + "/" + cmd[0]))
-            {
                 return (execute_launch(new string[2] { "launch", cmd[0] }));
-            }
             return (execute_unknown_cmd(cmd));
         }
 
-        static public int execute_input(string[][] input, string desktop_dir, string appdata_dir, ref bool working, ref bool superuser, ref long last_result, ref List<Genius_data> genius_data, ref bool script_enable, ref bool genius_enable, ref bool private_mode, ref int refresh_timer, ref bool auto_lock, ref bool auto_log, ref bool cmd_print_user, ref bool cmd_print_path, ref bool cmd_print_time, ref string[] previous_directory, ref int previous_directory_pointer, ref int max_genius_data)
+        static public int execute_input(string[][] input, string desktop_dir, string appdata_dir, ref bool working, ref bool superuser, ref long last_result, ref List<Genius_data> genius_data, ref bool script_enable, ref bool genius_enable, ref bool private_mode, ref int refresh_timer, ref bool auto_lock, ref bool auto_log, ref bool cmd_print_user, ref bool cmd_print_path, ref bool cmd_print_time, ref string[] previous_directory, ref int previous_directory_pointer, ref int max_genius_data, ref string language, ref List<Link> allLinks, ref NotificationManager notificationManager)
         {   
             for (int i = 0; i < input.GetLength(0) - 1 && working; i++ )
             {
                 if(input[i].Length > 0)
                 {
+                    Interpreter.replaceLinks(ref input[i], allLinks);
                     if (!private_mode)
-                    {
                         update_genius_data(appdata_dir, input[i], ref genius_data, max_genius_data);
-                    }
-                    execute_command(ref input, i, input[i], desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data);
+                    execute_command(ref input, i, input[i], desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager);
                 }
             }
             if(working && input.GetLength(0) > 0 && input[input.GetLength(0) - 1].Length > 0)
             {
+                Interpreter.replaceLinks(ref input[input.GetLength(0) - 1], allLinks);
                 if (!private_mode)
-                {
                     update_genius_data(appdata_dir, input[input.GetLength(0) - 1], ref genius_data, max_genius_data);
-                }
-                return (execute_command(ref input, input.GetLength(0) - 1, input[input.GetLength(0) - 1], desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data));
+                return (execute_command(ref input, input.GetLength(0) - 1, input[input.GetLength(0) - 1], desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager));
             }
             else
-            {
                 return (0);
-            }
         }
 
         static private int show_content(string entry)
@@ -250,20 +240,20 @@ namespace cmd_Linux
                 }
                 else if (Directory.Exists(entry))
                 {
-                    List<string> all_folders = Directory.EnumerateDirectories(entry).ToList();
-                    List<string> all_files = Directory.EnumerateFiles(entry).ToList();
+                    List<string> all_folders = Library.getAllDirectories(entry);
+                    List<string> all_files = Library.getAllFiles(entry);
 
                     
                     for (int i = 0; i < all_folders.Count; i++)
                     {
                         Console.Write("> ");
                         Console.ForegroundColor = ConsoleColor.Blue;
-                        Console.WriteLine(extract_shorter_path(all_folders[i]) + "/");
+                        Console.WriteLine(Library.extractShorterPath(all_folders[i]) + "/");
                         Console.ResetColor();
                     }
                     for (int i = 0; i < all_files.Count; i++)
                     {
-                        Console.WriteLine("> " + extract_shorter_path(all_files[i]));
+                        Console.WriteLine("> " + Library.extractShorterPath(all_files[i]));
                     }
                 }
                 else
@@ -625,21 +615,19 @@ namespace cmd_Linux
             {
                 for (int i = 1; i < cmd.Length; i++)
                 {
+                    if (cmd[i].Length > 1 && cmd[i][cmd[i].Length - 1] == '/')
+                        cmd[i] = cmd[i].Substring(0, cmd[i].Length - 1);
                     if (Directory.Exists(cmd[i]))
                     {
                         Console.WriteLine("> " + cmd[0] + ": " + cmd[i] + ": Directory already exists");
                         if (i == cmd.Length - 1)
-                        {
                             return (1);
-                        }
                     }
                     else if (File.Exists(cmd[i]))
                     {
                         Console.WriteLine("> " + cmd[0] + ": " + cmd[i] + ": File already exists");
                         if (i == cmd.Length - 1)
-                        {
                             return (1);
-                        }
                     }
                     else
                     {
@@ -780,17 +768,28 @@ namespace cmd_Linux
         {
             if(cmd.Length == 3)
             {
-                if (File.Exists(cmd[2] + "/" + extract_shorter_path(cmd[1])) || Directory.Exists(cmd[2] + "/" + extract_shorter_path(cmd[1])))
+                if(File.Exists(cmd[1]))
                 {
-                    Console.WriteLine("> " + cmd[0] + ": " + extract_shorter_path(cmd[1]) + ": File already exists in " + cmd[2]);
+                    if (File.Exists(cmd[2] + "/" + Library.extractShorterPath(cmd[1])) || Directory.Exists(cmd[2] + "/" + Library.extractShorterPath(cmd[1])))
+                    {
+                        Console.WriteLine("> " + cmd[0] + ": " + Library.extractShorterPath(cmd[1]) + ": File already exists in " + cmd[2]);
+                        return (1);
+                    }
+                    else
+                    {
+                        if (execute_cp(new string[3] { "mv", cmd[1], cmd[2] }) == 0)
+                            execute_rm(new string[2] { "mv", cmd[1] });
+                    }
+                }
+                else if(Directory.Exists(cmd[1]))
+                {
+                    Console.WriteLine("> " + cmd[0] + ": " + Library.extractShorterPath(cmd[1]) + ": is a directory");
                     return (1);
                 }
                 else
                 {
-                    if (execute_cp(new string[3] { "mv", cmd[1], cmd[2] }) == 0)
-                    {
-                        File.Delete(cmd[1]);
-                    }
+                    Console.WriteLine("> " + cmd[0] + ": " + Library.extractShorterPath(cmd[1]) + ": no such file or directory");
+                    return (1);
                 }
             }
             else
@@ -813,14 +812,14 @@ namespace cmd_Linux
                 {
                     cmd[1] = cmd[1].Substring(0, cmd[1].Length - 1);
                 }
-                new_name = extract_shorter_path(cmd[1]);
+                new_name = Library.extractShorterPath(cmd[1]);
                 if(Directory.Exists(cmd[1]))
                 {
                     if(cmd.Length == 2)
                     {
                         if (target_is_copy_folder(cmd[1], Directory.GetCurrentDirectory()))
                         {
-                            Console.WriteLine("> "+ cmd[0] + ": Exeption: Can't copy into the source directory");
+                            Console.WriteLine("> "+ cmd[0] + ": Exception: Can't copy into the source directory");
                             return (1);
                         }
                         else
@@ -903,10 +902,8 @@ namespace cmd_Linux
             if (cmd.Length == 3)
             {
                 if (cmd[1][cmd[1].Length - 1] == '/' || cmd[1][cmd[1].Length - 1] == '\\')
-                {
                     cmd[1] = cmd[1].Substring(0, cmd[1].Length - 1);
-                }
-                if (Directory.Exists(cmd[2] + "/" + extract_shorter_path(cmd[1])) || File.Exists(cmd[2] + "/" + extract_shorter_path(cmd[1])))
+                if (Directory.Exists(cmd[2] + "/" + Library.extractShorterPath(cmd[1])) || File.Exists(cmd[2] + "/" + Library.extractShorterPath(cmd[1])))
                 {
                     Console.WriteLine("> " + cmd[0] + ": " + cmd[1] + ": Directory already exists in " + cmd[2]);
                     return (1);
@@ -914,9 +911,7 @@ namespace cmd_Linux
                 else
                 {
                     if (execute_cpdir(new string[3] { "mvdir", cmd[1], cmd[2] }) == 0)
-                    {
                         execute_rmdir(new string[2] { "mvdir", cmd[1] });
-                    }
                 }
             }
             else
@@ -958,6 +953,18 @@ namespace cmd_Linux
         {
             if(cmd.Length > 1)
             {
+                DateTime executionDate = new DateTime(1970, 1, 2);
+
+                for (int i = cmd.Length - 1; i > 0; i--)
+                {
+                    if (cmd[i] == "/with")
+                    {
+                        NotificationManager arg_notif = new NotificationManager("");
+                        string arg_string = "";
+                        return (execute_launch_arg(cmd, i, ref arg_notif, arg_string, DateTime.Now));
+                    }
+                }
+
                 ProcessStartInfo pStart = new ProcessStartInfo();
 
                 for (int i = 1; i < cmd.Length; i++ )
@@ -966,25 +973,17 @@ namespace cmd_Linux
                     {
                         try
                         {
-                            if(cmd[i][0] == '/')
+                            if (cmd[i][0] == '/')
                             {
-                                if(File.Exists(cmd[i]) || Directory.Exists(cmd[i]))
-                                {
+                                if (File.Exists(cmd[i]) || Directory.Exists(cmd[i]))
                                     pStart.FileName = Path.GetFullPath(cmd[i]);
-                                }
                                 else if (File.Exists("." + cmd[i]) || Directory.Exists("." + cmd[i]))
-                                {
                                     pStart.FileName = Path.GetFullPath("." + cmd[i]);
-                                }
                                 else
-                                {
                                     pStart.FileName = Path.GetFullPath(cmd[i]);
-                                }
                             }
                             else
-                            {
                                 pStart.FileName = Path.GetFullPath(cmd[i]);
-                            }
                             pStart.RedirectStandardOutput = false;
                             pStart.RedirectStandardError = false;
                             pStart.RedirectStandardInput = false;
@@ -996,18 +995,14 @@ namespace cmd_Linux
                         {
                             Console.WriteLine("> " + cmd[0] + ": " + cmd[i] + ": failed to execute");
                             if (i == cmd.Length - 1)
-                            {
                                 return (1);
-                            }
                         }
                     }
                     else
                     {
                         Console.WriteLine("> " + cmd[0] + ": " + cmd[i] + ": No such file or directory");
-                        if(i == cmd.Length - 1)
-                        {
+                        if (i == cmd.Length - 1)
                             return (1);
-                        }
                     }
                 }
             }
@@ -1040,67 +1035,218 @@ namespace cmd_Linux
             return (0);
         } //OK
 
-        static public int execute_launch_arg(string[] cmd)
+        static private int execute_launch(string[] cmd, ref NotificationManager notificationManager, string appdata_dir)
         {
-            if (cmd.Length > 2)
+            if (cmd.Length > 1)
             {
+                DateTime executionDate = new DateTime(1970, 1, 2);
+
+                if (cmd.Length > 2 && cmd[1] == "/planned")
+                {
+                    if (cmd[2] != "now")
+                    {
+                        executionDate = Library.getDateTimeFromString(cmd[2]);
+                        if (executionDate == new DateTime(1970, 1, 1))
+                        {
+                            Console.WriteLine("> " + cmd[0] + ": " + cmd[2] + ": invalid date");
+                            return (1);
+                        }
+                    }
+                    cmd = Library.removeArrElement(cmd, 2);
+                    cmd = Library.removeArrElement(cmd, 1);
+                }
+
+                for (int i = cmd.Length - 1; i > 0; i--)
+                {
+                    if (cmd[i] == "/with")
+                        return (execute_launch_arg(cmd, i, ref notificationManager, appdata_dir, executionDate));
+                }
+
                 ProcessStartInfo pStart = new ProcessStartInfo();
 
-                if (Directory.Exists(cmd[2]) || File.Exists(cmd[2]) || File.Exists("." + cmd[2]) || Directory.Exists("." + cmd[2]))
+                for (int i = 1; i < cmd.Length; i++)
                 {
-                    try
+                    if (executionDate == new DateTime(1970, 1, 2))
                     {
-                        if (cmd[2][0] == '/')
+                        if (Directory.Exists(cmd[i]) || File.Exists(cmd[i]) || File.Exists("." + cmd[i]) || Directory.Exists("." + cmd[i]))
                         {
-                            if (File.Exists(cmd[2]) || Directory.Exists(cmd[2]))
+                            try
                             {
-                                pStart.FileName = Path.GetFullPath(cmd[2]);
+                                if (cmd[i][0] == '/')
+                                {
+                                    if (File.Exists(cmd[i]) || Directory.Exists(cmd[i]))
+                                        pStart.FileName = Path.GetFullPath(cmd[i]);
+                                    else if (File.Exists("." + cmd[i]) || Directory.Exists("." + cmd[i]))
+                                        pStart.FileName = Path.GetFullPath("." + cmd[i]);
+                                    else
+                                        pStart.FileName = Path.GetFullPath(cmd[i]);
+                                }
+                                else
+                                    pStart.FileName = Path.GetFullPath(cmd[i]);
+                                pStart.RedirectStandardOutput = false;
+                                pStart.RedirectStandardError = false;
+                                pStart.RedirectStandardInput = false;
+                                pStart.UseShellExecute = true;
+                                pStart.CreateNoWindow = true;
+                                Process p = Process.Start(pStart);
                             }
-                            else if (File.Exists("." + cmd[2]) || Directory.Exists("." + cmd[2]))
+                            catch (Exception)
                             {
-                                pStart.FileName = Path.GetFullPath("." + cmd[2]);
-                            }
-                            else
-                            {
-                                pStart.FileName = Path.GetFullPath(cmd[2]);
+                                Console.WriteLine("> " + cmd[0] + ": " + cmd[i] + ": failed to execute");
+                                if (i == cmd.Length - 1)
+                                    return (1);
                             }
                         }
                         else
                         {
-                            pStart.FileName = Path.GetFullPath(cmd[2]);
+                            Console.WriteLine("> " + cmd[0] + ": " + cmd[i] + ": No such file or directory");
+                            if (i == cmd.Length - 1)
+                                return (1);
                         }
-                        for (int i = 3; i < cmd.Length; i++)
-                        {
-                            if(i > 3)
-                                pStart.Arguments = pStart.Arguments + " " + cmd[i];
-                            else
-                                pStart.Arguments = cmd[i];
-                        }
-                        pStart.RedirectStandardOutput = false;
-                        pStart.RedirectStandardError = false;
-                        pStart.RedirectStandardInput = false;
-                        pStart.UseShellExecute = true;
-                        pStart.CreateNoWindow = true;
-                        Process p = Process.Start(pStart);
                     }
-                    catch (Exception)
+                    else
                     {
-                        try
+                        if (notificationManager.addNotification(appdata_dir, executionDate, "EXE", "launch " + cmd[i]))
+                            Console.WriteLine("> " + cmd[0] + ": " + cmd[i] + ": execution set for " + executionDate);
+                        else
                         {
-                            pStart.UseShellExecute = false;
-                            Process p = Process.Start(pStart);
-                        }
-                        catch(Exception)
-                        {
-                            Console.WriteLine("> " + cmd[0] + ": " + cmd[2] + ": failed to execute");
-                            return (1);
+                            Console.WriteLine("> " + cmd[0] + ": " + cmd[i] + ": unable to set execution for " + executionDate + " (execute it with admin rights)");
+                            if (i == cmd.Length - 1)
+                                return (1);
                         }
                     }
                 }
+            }
+            else if (cmd.Length == 1)
+            {
+                ProcessStartInfo pStart = new ProcessStartInfo();
+
+                try
+                {
+                    pStart.FileName = Assembly.GetExecutingAssembly().Location;
+                    pStart.RedirectStandardOutput = false;
+                    pStart.RedirectStandardError = false;
+                    pStart.RedirectStandardInput = false;
+                    pStart.UseShellExecute = true;
+                    pStart.CreateNoWindow = true;
+                    Process p = Process.Start(pStart);
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("> " + cmd[0] + ": failed to open new cmd Linux session");
+                    return (1);
+                }
+            }
+            else
+            {
+                Console.WriteLine("> launch: Invalid number of arguments");
+                return (1);
+            }
+
+            return (0);
+        } //OK
+
+        static private int execute_launch_arg(string[] cmd, int withIndex, ref NotificationManager notificationManager, string appdata_dir, DateTime executionDate, bool silentMode = false)
+        {
+            if (cmd.Length > 2)
+            {
+                if(withIndex == cmd.Length - 2)
+                {
+                    if(withIndex > 1)
+                    {
+                        if(!Library.date2IsBeforeDate1(DateTime.Now, executionDate))
+                        {
+                            if(notificationManager.addNotification(appdata_dir, executionDate, "EXE", Library.concArrToString(cmd, 0, cmd.Length, true)))
+                            {
+                                if(!silentMode)
+                                    Console.WriteLine("> " + cmd[0] + ": execution set for " + executionDate);
+                            }   
+                            else
+                            {
+                                if (!silentMode)
+                                    Console.WriteLine("> " + cmd[0] + ": unable to set execution for " + executionDate + " (execute it with admin rights)");
+                                return (1);
+                            }
+                        }
+                        else
+                        {
+                            ProcessStartInfo pStart = new ProcessStartInfo();
+
+                            if (Directory.Exists(cmd[cmd.Length - 1]) || File.Exists(cmd[cmd.Length - 1]) || File.Exists("." + cmd[cmd.Length - 1]) || Directory.Exists("." + cmd[cmd.Length - 1]))
+                            {
+                                try
+                                {
+                                    if (cmd[cmd.Length - 1][0] == '/')
+                                    {
+                                        if (File.Exists(cmd[cmd.Length - 1]) || Directory.Exists(cmd[cmd.Length - 1]))
+                                            pStart.FileName = Path.GetFullPath(cmd[cmd.Length - 1]);
+                                        else if (File.Exists("." + cmd[cmd.Length - 1]) || Directory.Exists("." + cmd[cmd.Length - 1]))
+                                            pStart.FileName = Path.GetFullPath("." + cmd[cmd.Length - 1]);
+                                        else
+                                            pStart.FileName = Path.GetFullPath(cmd[cmd.Length - 1]);
+                                    }
+                                    else
+                                        pStart.FileName = Path.GetFullPath(cmd[cmd.Length - 1]);
+                                    for (int i = 1; i < withIndex; i++)
+                                    {
+                                        if (i > 1)
+                                        {
+                                            if (File.Exists(cmd[i]) || Directory.Exists(cmd[i]))
+                                                pStart.Arguments = pStart.Arguments + " \"" + Path.GetFullPath(cmd[i]) + "\"";
+                                            else
+                                                pStart.Arguments = pStart.Arguments + " \"" + cmd[i] + "\"";
+                                        }
+                                        else
+                                        {
+                                            if (File.Exists(cmd[i]) || Directory.Exists(cmd[i]))
+                                                pStart.Arguments = "\"" + Path.GetFullPath(cmd[i]) + "\"";
+                                            else
+                                                pStart.Arguments = "\"" + cmd[i] + "\"";
+                                        }
+                                    }
+                                    pStart.RedirectStandardOutput = false;
+                                    pStart.RedirectStandardError = false;
+                                    pStart.RedirectStandardInput = false;
+                                    pStart.UseShellExecute = true;
+                                    pStart.CreateNoWindow = true;
+                                    Process p = Process.Start(pStart);
+                                }
+                                catch (Exception)
+                                {
+                                    try
+                                    {
+                                        pStart.UseShellExecute = false;
+                                        Process p = Process.Start(pStart);
+                                    }
+                                    catch (Exception)
+                                    {
+                                        Console.WriteLine("> " + cmd[0] + ": " + cmd[cmd.Length - 1] + ": failed to execute");
+                                        return (1);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("> " + cmd[0] + ": " + cmd[cmd.Length - 1] + ": No such file or directory");
+                                return (1);
+                            }
+                        }
+                    }
+                    else
+                        return (execute_launch(new string[4] { "launch", "/planned", (executionDate.Day + "/" + executionDate.Month + "/" + executionDate.Year), cmd[cmd.Length - 1] }, ref notificationManager, appdata_dir)); 
+                }
                 else
                 {
-                    Console.WriteLine("> " + cmd[0] + ": " + cmd[2] + ": No such file or directory");
-                    return (1);
+                    if(withIndex < cmd.Length - 2)
+                    {
+                        Console.WriteLine("> launch: Too many program files.");
+                        return (1);
+                    }
+                    else
+                    {
+                        Console.WriteLine("> launch: Program file missing.");
+                        return (1);
+                    }
                 }
             }
             else
@@ -1244,38 +1390,34 @@ namespace cmd_Linux
                 return (0);
         } //OK
 
-        static private int execute_shutdown(string[] cmd)
+        static private int execute_shutdown(string[] cmd, ref NotificationManager notificationManager, string appdata_dir)
         {
             string path = "";
             if(File.Exists("C:/Windows/System32/shutdown.exe"))
-            {
                 path = "C:/Windows/System32/shutdown.exe";
-            }
 
             if(path != "")
             {
                 if (cmd.Length == 1)
-                {
-                    return (execute_launch_arg(new string[] { "launch", "/arg", path, "-s -t 5" }));
-                }
+                    return (execute_launch_arg(new string[] { "launch", "-s", "-t", "5", "/with", path }, 4, ref notificationManager, appdata_dir, DateTime.Now, true));
                 else if (cmd.Length == 2 || cmd.Length == 3)
                 {
                     switch (cmd[1])
                     {
                         case ("now"):
-                            return (execute_launch_arg(new string[] { "launch", "/arg", path, "-s -t 0" }));
+                            return (execute_launch_arg(new string[] { "launch", "-s", "-t", "0", "/with", path }, 4, ref notificationManager, appdata_dir, DateTime.Now, true));
                         case ("/r"):
-                            return (execute_launch_arg(new string[] { "launch", "/arg", path, "-r -t 5" }));
+                            return (execute_launch_arg(new string[] { "launch", "-r", "-t", "5", "/with", path }, 4, ref notificationManager, appdata_dir, DateTime.Now, true));
                         case ("/g"):
-                            return (execute_launch_arg(new string[] { "launch", "/arg", path, "-g -t 5" }));
+                            return (execute_launch_arg(new string[] { "launch", "-g", "-t", "5", "/with", path }, 4, ref notificationManager, appdata_dir, DateTime.Now, true));
                         case ("/a"):
-                            return (execute_launch_arg(new string[] { "launch", "/arg", path, "-a" }));
+                            return (execute_launch_arg(new string[] { "launch", "-a", "/with", path }, 2, ref notificationManager, appdata_dir, DateTime.Now, true));
                         case ("/l"):
-                            return (execute_launch_arg(new string[] { "launch", "/arg", path, "-l" }));
+                            return (execute_launch_arg(new string[] { "launch", "-l", "/with", path }, 2, ref notificationManager, appdata_dir, DateTime.Now, true));
                         case ("/h"):
-                            return (execute_launch_arg(new string[] { "launch", "/arg", path, "-h" }));
+                            return (execute_launch_arg(new string[] { "launch", "-h", "/with", path }, 2, ref notificationManager, appdata_dir, DateTime.Now, true));
                         case ("/p"):
-                            return (execute_launch_arg(new string[] { "launch", "/arg", path, "-p" }));
+                            return (execute_launch_arg(new string[] { "launch", "-p", "/with", path }, 2, ref notificationManager, appdata_dir, DateTime.Now, true));
                         case ("/t"):
                             if (cmd.Length == 3)
                             {
@@ -1308,9 +1450,7 @@ namespace cmd_Linux
                                 }
 
                                 if (time >= 0 && time < 315360000)
-                                {
-                                    return (execute_launch_arg(new string[] { "launch", "/arg", path, "-s -t " + time}));
-                                }
+                                    return (execute_launch_arg(new string[] { "launch", "-s", "-t ", time + "", "/with", path }, 4, ref notificationManager, appdata_dir, DateTime.Now, true));
                                 else
                                 {
                                     Console.WriteLine("> " + cmd[0] + ": " + time + ": Out of range [0;315360000[");
@@ -1319,7 +1459,7 @@ namespace cmd_Linux
                             }
                             else
                             {
-                                Console.WriteLine("> shutdown /t: Invalid number of arguments");
+                                Console.WriteLine("> " + cmd[0] + ": /t: Invalid number of arguments");
                                 return (1);
                             }
                         default:
@@ -1554,46 +1694,28 @@ namespace cmd_Linux
 
         static private int execute_uninstall(string appdata_dir)
         {
-            if(appdata_dir != "")
+            if (Directory.Exists(appdata_dir))
+                execute_rmdir(new string[2] { "uninstall", appdata_dir });
+
+            try
             {
-                List<string> all_files = new List<string>();
+                StreamWriter bat = new StreamWriter(appdata_dir + "/cmd.bat");
 
-                if(Directory.Exists(appdata_dir + "/script_files/"))
+                bat.WriteLine("control");
+
+                bat.Close();
+                if (execute_launch(new string[2] { "uninstall", appdata_dir + "/cmd.bat" }) == 0)
                 {
-                    all_files = Directory.EnumerateFiles(appdata_dir + "/script_files/").ToList();
+                    Console.WriteLine("> uninstall: use the unistall windows tools to complete uninstalling");
                 }
 
-                for (int i = 0; i < all_files.Count; i++)
-                {
-                    File.Delete(all_files[i]);
-                }
-
-                try
-                {
-                    StreamWriter bat = new StreamWriter(appdata_dir + "/cmd.bat");
-
-                    bat.WriteLine("control");
-
-                    bat.Close();
-                    if (execute_launch(new string[2] { "uninstall", appdata_dir + "/cmd.bat" }) == 0)
-                    {
-                        Console.WriteLine("> uninstall: use the unistall windows tools to complete uninstalling");
-                    }
-
-                    return (0);
-                }
-                catch (Exception)
-                {
-                    Console.WriteLine("> uninstall: access denied! (execute it with admin rights)");
-                    return (1);
-                }
+                return (0);
             }
-            else
+            catch (Exception)
             {
-                Console.WriteLine("> uninstall: file not found, try to reinstall cmd Linux");
+                Console.WriteLine("> uninstall: access denied! (execute it with admin rights)");
                 return (1);
             }
-            
         } //OK
 
         static private int execute_url(string[] cmd)
@@ -1858,11 +1980,11 @@ namespace cmd_Linux
             string answer = "";
             Process[] process_found;
 
-            if(cmd.Length == 4 || (cmd.Length == 3 && cmd[1] == "/champion"))
+            if (cmd.Length == 4 || (cmd.Length == 3 && cmd[1] == "/champion") || (cmd.Length == 2 && cmd[1] == "/chat"))
             {
-                create_lolapp_script(cmd, appdata_dir);
-                execute_cp(new string[3] { "lolapp", appdata_dir + "/script", Directory.GetParent(Directory.GetParent(appdata_dir).ToString()) + "/lolapp" });
-                execute_rm(new string[2] { "lolapp", appdata_dir + "/script" });
+                create_lolapp_script(cmd, appdata_dir + "/..");
+                execute_mv(new string[3] { "lolapp", appdata_dir + "../script", appdata_dir + "../LoLapp" });
+                //execute_rm(new string[2] { "lolapp", appdata_dir + "../script" });
             }
             process_found = Process.GetProcessesByName("LoLapp");
             if(process_found.Length == 0 || cmd.Length == 1)
@@ -1873,9 +1995,9 @@ namespace cmd_Linux
                     answer = reader.ReadLine();
                     reader.Close();
                 }
-                if (File.Exists(Directory.GetParent(Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName).FullName + "/LoLapp/lolapp.exe"))
+                if (File.Exists(Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName + "/LoLapp/lolapp.exe"))
                 {
-                    return (execute_launch(new string[2] { "lolapp", Directory.GetParent(Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName).FullName + "/LoLapp/lolapp.exe" }));
+                    return (execute_launch(new string[2] { "lolapp", Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName + "/LoLapp/lolapp.exe" }));
                 }
                 else if (answer != null && answer != "")
                 {
@@ -1902,7 +2024,7 @@ namespace cmd_Linux
                         {
                             answer = answer.Substring(0, answer.Length - 1);
                         }
-                        if (File.Exists(answer) && (extract_shorter_path(answer) == "LoLapp.exe" || extract_shorter_path(answer) == "LoLapp.lnk"))
+                        if (File.Exists(answer) && (Library.extractShorterPath(answer) == "LoLapp.exe" || Library.extractShorterPath(answer) == "LoLapp.lnk"))
                         {
                             StreamWriter writer = new StreamWriter(appdata_dir + "/lolapp_location");
                             writer.WriteLine(answer);
@@ -1910,13 +2032,13 @@ namespace cmd_Linux
                             Console.WriteLine("> lolapp: LoLapp location saved!");
                             return (execute_launch(new string[2] { "lolapp", answer }));
                         }
-                        else if (extract_shorter_path(answer) != "LoLapp.exe" && extract_shorter_path(answer) != "LoLapp.lnk")
+                        else if (Library.extractShorterPath(answer) != "LoLapp.exe" && Library.extractShorterPath(answer) != "LoLapp.lnk")
                         {
-                            Console.WriteLine("> lolapp: " + extract_shorter_path(answer) + ": incorrect file or application");
+                            Console.WriteLine("> lolapp: " + Library.extractShorterPath(answer) + ": incorrect file or application");
                         }
                         else
                         {
-                            Console.WriteLine("> lolapp: " + extract_shorter_path(answer) + ": file not found");
+                            Console.WriteLine("> lolapp: " + Library.extractShorterPath(answer) + ": file not found");
                         }
                     }
                     return (1);
@@ -1964,7 +2086,7 @@ namespace cmd_Linux
                 {
                     Console.Write("> skype: enter the path of Skype (or drag Skype in this window): ");
                     answer = Console.ReadLine();
-                    if (File.Exists(answer) && (extract_shorter_path(answer) == "Skype.exe" || extract_shorter_path(answer) == "Skype.lnk"))
+                    if (File.Exists(answer) && (Library.extractShorterPath(answer) == "Skype.exe" || Library.extractShorterPath(answer) == "Skype.lnk"))
                     {
                         StreamWriter writer = new StreamWriter(appdata_dir + "/skype_location");
                         writer.WriteLine(answer);
@@ -1972,13 +2094,13 @@ namespace cmd_Linux
                         Console.WriteLine("> skype: Skype location saved!");
                         return (execute_launch(new string[2] { "skype", answer }));
                     }
-                    else if (extract_shorter_path(answer) != "Skype.exe" && extract_shorter_path(answer) != "Skype.lnk")
+                    else if (Library.extractShorterPath(answer) != "Skype.exe" && Library.extractShorterPath(answer) != "Skype.lnk")
                     {
-                        Console.WriteLine("> skype: " + extract_shorter_path(answer) + ": incorrect file or application");
+                        Console.WriteLine("> skype: " + Library.extractShorterPath(answer) + ": incorrect file or application");
                     }
                     else
                     {
-                        Console.WriteLine("> skype: " + extract_shorter_path(answer) + ": file not found");
+                        Console.WriteLine("> skype: " + Library.extractShorterPath(answer) + ": file not found");
                     }
                 }
                 return (1);
@@ -2024,7 +2146,7 @@ namespace cmd_Linux
                 {
                     Console.Write("> ts: enter the path of Team Speak (or drag Team Speak in this window): ");
                     answer = Console.ReadLine();
-                    if (File.Exists(answer) && (extract_shorter_path(answer) == "ts3client_win32.exe" || extract_shorter_path(answer) == "TeamSpeak 3 Client.lnk"))
+                    if (File.Exists(answer) && (Library.extractShorterPath(answer) == "ts3client_win32.exe" || Library.extractShorterPath(answer) == "TeamSpeak 3 Client.lnk"))
                     {
                         StreamWriter writer = new StreamWriter(appdata_dir + "/ts_location");
                         writer.WriteLine(answer);
@@ -2032,13 +2154,13 @@ namespace cmd_Linux
                         Console.WriteLine("> ts: Team Speak location saved!");
                         return (execute_launch(new string[2] { "ts", answer }));
                     }
-                    else if (extract_shorter_path(answer) != "ts3client_win32.exe" && extract_shorter_path(answer) != "TeamSpeak 3 Client.lnk")
+                    else if (Library.extractShorterPath(answer) != "ts3client_win32.exe" && Library.extractShorterPath(answer) != "TeamSpeak 3 Client.lnk")
                     {
-                        Console.WriteLine("> ts: " + extract_shorter_path(answer) + ": incorrect file or application");
+                        Console.WriteLine("> ts: " + Library.extractShorterPath(answer) + ": incorrect file or application");
                     }
                     else
                     {
-                        Console.WriteLine("> ts: " + extract_shorter_path(answer) + ": file not found");
+                        Console.WriteLine("> ts: " + Library.extractShorterPath(answer) + ": file not found");
                     }
                 }
                 return (1);
@@ -2048,85 +2170,34 @@ namespace cmd_Linux
         static private int execute_reset(string[] cmd, string appdata_dir, ref List<Genius_data> genius_data)
         {
             int error = 0;
-
+            List<string> commands = Static_data.cmd_linux_commands();
             if (cmd.Length == 1)
             {
-                StreamWriter eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_bing");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_cat");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_cd");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_cp");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_cpdir");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_echo");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_facebook");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_google");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_launch");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_lolapp");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_ls");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_map");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_mkdir");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_rm");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_mv");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_mvdir");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_news");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_rename");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_rmdir");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_search");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_textedit");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_time");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_touch");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_translate");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_twitter");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_url");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_wait");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_wikipedia");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_yahoo");
-                eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/genius_data/genius_data_youtube");
-                eraser.Close();
+                StreamWriter eraser;
+                for (int j = 0; j < Static_data.cmd_linux_commands().Count; j++)
+                {
+                    if (Static_data.has_genius_data_file(Static_data.cmd_linux_commands()[j]))
+                    {
+                        if (Static_data.cmd_linux_commands()[j][Static_data.cmd_linux_commands()[j].Length - 1] == ';')
+                            eraser = new StreamWriter(appdata_dir + "genius_data/" + Static_data.cmd_linux_commands()[j].Substring(0, Static_data.cmd_linux_commands()[j].Length - 1));
+                        else
+                            eraser = new StreamWriter(appdata_dir + "genius_data/" + Static_data.cmd_linux_commands()[j]);
+                        eraser.Close();
+                    }
+                }
                 eraser = new StreamWriter(appdata_dir + "/skype_location");
                 eraser.Close();
                 eraser = new StreamWriter(appdata_dir + "/ts_location");
                 eraser.Close();
                 eraser = new StreamWriter(appdata_dir + "/lolapp_location");
                 eraser.Close();
-                eraser = new StreamWriter(appdata_dir + "/shutdown.bat");
-                eraser.Close();
                 eraser = new StreamWriter(appdata_dir + "/cmd.bat");
                 eraser.Close();
+                save_option(true, 50, false, true, false, false, true, true, false, 10000, "en", appdata_dir);
                 Program.reinit_file_genius_data_cmd(appdata_dir, Static_data.cmd_linux_commands());
             }
             else if (cmd.Length == 2 && cmd[1] == "/stats")
-            {
                 Program.reinit_file_genius_data_cmd(appdata_dir, Static_data.cmd_linux_commands());
-            }
             else if (cmd.Length >= 2)
             {
                 if(cmd[1] == "/genius")
@@ -2142,9 +2213,7 @@ namespace cmd_Linux
                                 error = 0;
                             }
                             else
-                            {
                                 error = 1;
-                            }
                         }
                     }
                     else
@@ -2159,9 +2228,7 @@ namespace cmd_Linux
                                 error = 0;
                             }
                             else
-                            {
                                 error = 1;
-                            }
                         }
                     }
                 }
@@ -2198,9 +2265,7 @@ namespace cmd_Linux
                     if (cmd.Length > 2)
                     {
                         if (!Directory.Exists(appdata_dir + "/script_files/"))
-                        {
                             Directory.CreateDirectory(appdata_dir + "/script_files/");
-                        }
 
                         for (int i = 2; i < cmd.Length; i++)
                         {
@@ -2231,9 +2296,7 @@ namespace cmd_Linux
                                         StreamWriter script_creator = new StreamWriter(appdata_dir + "/script_files/" + cmd[i]);
 
                                         for (int j = 0; j < script_instructions.Count; j++)
-                                        {
                                             script_creator.WriteLine(script_instructions[j]);
-                                        }
 
                                         script_creator.Close();
                                         Console.Write("> ");
@@ -2353,7 +2416,7 @@ namespace cmd_Linux
 
                             for (int i = 0; i < all_files.Count; i++)
                             {
-                                Console.WriteLine("> " + extract_shorter_path(all_files[i]));
+                                Console.WriteLine("> " + Library.extractShorterPath(all_files[i]));
                             }
                         }
                         else
@@ -2402,9 +2465,9 @@ namespace cmd_Linux
                         {
                             if (File.Exists(cmd[i]))
                             {
-                                if (is_script_format(extract_shorter_path(cmd[i])))
+                                if (is_script_format(Library.extractShorterPath(cmd[i])))
                                 {
-                                    if (File.Exists(appdata_dir + "/script_files/" + extract_shorter_path(cmd[i])))
+                                    if (File.Exists(appdata_dir + "/script_files/" + Library.extractShorterPath(cmd[i])))
                                     {
                                         if (cmd[2] == "/f")
                                         {
@@ -2421,7 +2484,7 @@ namespace cmd_Linux
                                         }
                                         if (answer == "y" || answer == "Y")
                                         {
-                                            execute_rm(new string[2] { "script", appdata_dir + "/script_files/" + extract_shorter_path(cmd[i]) });
+                                            execute_rm(new string[2] { "script", appdata_dir + "/script_files/" + Library.extractShorterPath(cmd[i]) });
                                             execute_cp(new string[3] { "script", cmd[i], appdata_dir + "/script_files/" });
                                             Console.WriteLine("> script: /import: " + cmd[i] + " replaced");
                                             elt_replaced++;
@@ -2442,7 +2505,7 @@ namespace cmd_Linux
                                 }
                                 else
                                 {
-                                    Console.WriteLine("> script: /import: " + extract_shorter_path(cmd[i]) + ": Wrong script format");
+                                    Console.WriteLine("> script: /import: " + Library.extractShorterPath(cmd[i]) + ": Wrong script format");
                                     elt_refused++;
                                 }
                             }
@@ -2455,14 +2518,14 @@ namespace cmd_Linux
                                 }
                                 catch (Exception)
                                 {
-                                    Console.WriteLine("> script: /import: " + extract_shorter_path(cmd[i]) + ": Unable to access content");
+                                    Console.WriteLine("> script: /import: " + Library.extractShorterPath(cmd[i]) + ": Unable to access content");
                                 }
 
                                 for (int j = 0; j < all_files.Count; j++)
                                 {
-                                    if (is_script_format(extract_shorter_path(all_files[j])))
+                                    if (is_script_format(Library.extractShorterPath(all_files[j])))
                                     {
-                                        if (File.Exists(appdata_dir + "/script_files/" + extract_shorter_path(all_files[j])))
+                                        if (File.Exists(appdata_dir + "/script_files/" + Library.extractShorterPath(all_files[j])))
                                         {
                                             if (cmd[2] == "/f")
                                             {
@@ -2474,33 +2537,33 @@ namespace cmd_Linux
                                             }
                                             else
                                             {
-                                                Console.Write("> script: /import: " + extract_shorter_path(all_files[j]) + ": Script already exists, replace it? (Y/N): ");
+                                                Console.Write("> script: /import: " + Library.extractShorterPath(all_files[j]) + ": Script already exists, replace it? (Y/N): ");
                                                 answer = Console.ReadLine();
                                             }
                                             if (answer == "y" || answer == "Y")
                                             {
-                                                execute_rm(new string[2] { "script", appdata_dir + "/script_files/" + extract_shorter_path(all_files[j]) });
+                                                execute_rm(new string[2] { "script", appdata_dir + "/script_files/" + Library.extractShorterPath(all_files[j]) });
                                                 execute_cp(new string[3] { "script", all_files[j], appdata_dir + "/script_files/" });
-                                                Console.WriteLine("> script: /import: " + extract_shorter_path(all_files[j]) + " replaced");
+                                                Console.WriteLine("> script: /import: " + Library.extractShorterPath(all_files[j]) + " replaced");
                                                 elt_replaced++;
                                                 elt_added++;
                                             }
                                             else
                                             {
-                                                Console.WriteLine("> script: /import: " + extract_shorter_path(cmd[i]) + "/" + extract_shorter_path(all_files[j]) + ": Abandon");
+                                                Console.WriteLine("> script: /import: " + Library.extractShorterPath(cmd[i]) + "/" + Library.extractShorterPath(all_files[j]) + ": Abandon");
                                                 elt_refused++;
                                             }
                                         }
                                         else
                                         {
                                             execute_cp(new string[3] { "script", all_files[j], appdata_dir + "/script_files/" });
-                                            Console.WriteLine("> script: /import: " + extract_shorter_path(all_files[j]) + " added");
+                                            Console.WriteLine("> script: /import: " + Library.extractShorterPath(all_files[j]) + " added");
                                             elt_added++;
                                         }
                                     }
                                     else
                                     {
-                                        Console.WriteLine("> script: /import: " + extract_shorter_path(all_files[j]) + ": Wrong script format");
+                                        Console.WriteLine("> script: /import: " + Library.extractShorterPath(all_files[j]) + ": Wrong script format");
                                         elt_refused++;
                                     }
                                 }
@@ -2564,7 +2627,6 @@ namespace cmd_Linux
                                     Console.WriteLine("> " + cmd[0] + ": unable to recover script (execute it with admin rights)");
                                     return (1);
                                 }
-
                             }
 
                             try
@@ -2600,9 +2662,7 @@ namespace cmd_Linux
                         {
                             line_read = "";
                             for (int j = 0; j < input[i].Length; j++)
-                            {
                                 line_read = line_read + "\"" + input[i][j] + "\" ";
-                            }
                             script_instructions.Add(line_read);
                         }
                         input = new string[0][];
@@ -2612,9 +2672,7 @@ namespace cmd_Linux
                             StreamWriter script_creator = new StreamWriter(appdata_dir + "script");
 
                             for (int i = 0; i < script_instructions.Count; i++)
-                            {
                                 script_creator.Write(script_instructions[i] + ";");
-                            }
 
                             script_creator.Close();
                         }
@@ -2623,9 +2681,7 @@ namespace cmd_Linux
                             Console.WriteLine("> " + cmd[0] + ": unable to launch script (execute it with admin rights)");
                             return (1);
                         }
-
                     }
-                
                     #endregion
                 }   
             }
@@ -2718,7 +2774,7 @@ namespace cmd_Linux
                                     }
                                     catch (Exception)
                                     {
-                                        Console.WriteLine("> " + cmd[0] + ": " + extract_shorter_path(cmd[1]) + ": access denied! (execute it with admin rights)");
+                                        Console.WriteLine("> " + cmd[0] + ": " + Library.extractShorterPath(cmd[1]) + ": access denied! (execute it with admin rights)");
                                         return (1);
                                     }
                                 }
@@ -2773,26 +2829,26 @@ namespace cmd_Linux
                                     }
                                     catch (Exception)
                                     {
-                                        Console.WriteLine("> " + cmd[0] + ": " + extract_shorter_path(cmd[1]) + ": access denied! (execute it with admin rights)");
+                                        Console.WriteLine("> " + cmd[0] + ": " + Library.extractShorterPath(cmd[1]) + ": access denied! (execute it with admin rights)");
                                         return (1);
                                     }
                                 }
                                 else
                                 {
-                                    Console.WriteLine("> " + cmd[0] + ": " + extract_shorter_path(cmd[2]) + ": File name is too long (max 260 char)");
+                                    Console.WriteLine("> " + cmd[0] + ": " + Library.extractShorterPath(cmd[2]) + ": File name is too long (max 260 char)");
                                     return (1);
                                 }
                             }
                             else
                             {
-                                Console.WriteLine("> " + cmd[0] + ": " + extract_shorter_path(cmd[2]) + ": Directory already exists");
+                                Console.WriteLine("> " + cmd[0] + ": " + Library.extractShorterPath(cmd[2]) + ": Directory already exists");
                                 return (1);
                             }
 
                         }
                         else
                         {
-                            Console.WriteLine("> " + cmd[0] + ": " + extract_shorter_path(cmd[2]) + ": File already exists");
+                            Console.WriteLine("> " + cmd[0] + ": " + Library.extractShorterPath(cmd[2]) + ": File already exists");
                             return (1);
                         }
                     }
@@ -2800,11 +2856,11 @@ namespace cmd_Linux
                     {
                         if (cmd[2][cmd[2].Length - 1] == '/' || cmd[2][cmd[2].Length - 1] == '\\')
                         {
-                            Console.WriteLine("> " + cmd[0] + ": " + extract_shorter_path(cmd[2].Substring(0, cmd[2].Length - 1)) + "/: Invalid name");
+                            Console.WriteLine("> " + cmd[0] + ": " + Library.extractShorterPath(cmd[2].Substring(0, cmd[2].Length - 1)) + "/: Invalid name");
                         }
                         else
                         {
-                            Console.WriteLine("> " + cmd[0] + ": " + extract_shorter_path(cmd[2]) + ": Invalid name");
+                            Console.WriteLine("> " + cmd[0] + ": " + Library.extractShorterPath(cmd[2]) + ": Invalid name");
                         }
                         return (1);
                     }
@@ -2812,7 +2868,7 @@ namespace cmd_Linux
                 }
                 else
                 {
-                    Console.WriteLine("> " + cmd[0] + ": " + extract_shorter_path(cmd[1]) + ": No such file or directory");
+                    Console.WriteLine("> " + cmd[0] + ": " + Library.extractShorterPath(cmd[1]) + ": No such file or directory");
                     return (1);
                 }
             }
@@ -2828,9 +2884,10 @@ namespace cmd_Linux
         static private int execute_password(bool superuser, string appdata_dir)
         {
             bool init = false;
+            string new_user = "";
+            string old_user = "";
             string new_password = "";
             string old_password = "";
-            string User = Environment.UserName;
 
             try
             {
@@ -2849,29 +2906,46 @@ namespace cmd_Linux
             {
                 if(!init)
                 {
-                    if(Program.decrypt_password(ref User,ref old_password, appdata_dir, ref superuser))
+                    if(Security.decrypt_password(ref old_user ,ref old_password, appdata_dir, ref superuser))
                     {
                         Console.Write("> ");
                         Console.ForegroundColor = ConsoleColor.DarkRed;
+                        Console.Write("Enter user name: ");
+                        new_user = Console.ReadLine();
+                        Console.ResetColor();
+                        Console.Write("> ");
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
                         Console.Write("Enter password: ");
-                        new_password = Program.get_password_protocol();
+                        new_password = Security.get_password_protocol();
                     }
                     Console.ResetColor();
                 }
-                if(new_password == old_password)
+                if(new_user == old_user && new_password == old_password)
                 {
+                    Console.Write("> ");
+                    Console.ForegroundColor = ConsoleColor.DarkRed;
+                    Console.Write("Enter your new user name: ");
+                    new_user = Console.ReadLine();
+                    Console.ResetColor();
                     Console.Write("> ");
                     Console.ForegroundColor = ConsoleColor.DarkRed;
                     Console.Write("Enter your new password: ");
                     new_password = Console.ReadLine();
                     Console.ResetColor();
-                    if (Program.encrypt_password(new_password, appdata_dir))
+                    if (Security.encrypt_password(new_password, new_user, appdata_dir))
                     {
                         return (0);
                     }
                     else
                     {
-                        Console.WriteLine("> password: Invalid password");
+                        if(new_user.Length == 0)
+                        {
+                            Console.WriteLine("> password: Invalid user name");
+                        }
+                        if(new_password.Length == 0)
+                        {
+                            Console.WriteLine("> password: Invalid password");
+                        }
                     }
                 }
                 else
@@ -2894,36 +2968,26 @@ namespace cmd_Linux
             int start_cursor_top;
             float batPercentage = SystemInformation.PowerStatus.BatteryLifePercent;
             bool charging = SystemInformation.PowerStatus.PowerLineStatus == PowerLineStatus.Online;
+            int windowWidth = Console.WindowWidth;
             Stopwatch clock = new Stopwatch();
 
             Console.Title = "[LOCK] cmd Linux [LOCK]";
             Console.Clear();
+            Console.SetBufferSize(Console.WindowWidth, Console.WindowHeight);
             if(Console.WindowWidth / 2 - 12 < 0 || Console.WindowHeight / 2 - 5 < 0)
-            {
                 Console.SetCursorPosition(Console.WindowWidth / 2, Console.WindowHeight / 2);
-            }
             else
-            {
                 Console.SetCursorPosition(Console.WindowWidth / 2 - 12, Console.WindowHeight / 2 - 5);
-            }
             Console.Write("[LOCK] cmd Linux [LOCK]");
             if(Console.CursorLeft >= 19)
-            {
                 Console.SetCursorPosition(Console.CursorLeft - 19, Console.CursorTop + 3);
-            }
             else
-            {
                 Console.SetCursorPosition(0, Console.CursorTop + 3);
-            }
             Console.Write("Enter password");
             if (Console.CursorLeft >= 14)
-            {
                 Console.SetCursorPosition(Console.CursorLeft - 14, Console.CursorTop + 1);
-            }
             else
-            {
                 Console.SetCursorPosition(0, Console.CursorTop + 1);
-            }
             start_cursor_top = Console.CursorTop;
             start_cursor_left = Console.CursorLeft;
 
@@ -2947,20 +3011,30 @@ namespace cmd_Linux
                             Console.SetCursorPosition(1, 1);
                             Console.Write(get_battery_status());
                         }
-                        if (Console.WindowWidth - 1 - DateTime.Now.ToString().Length >= 0)
+                        if (8 < Console.WindowWidth - 2 - get_battery_status().Length)
                         {
-                            Console.SetCursorPosition(Console.WindowWidth - 1 - DateTime.Now.ToString().Length, 1);
+                            if (windowWidth != Console.WindowWidth)
+                            {
+                                Console.SetCursorPosition(get_battery_status().Length + 1, 1);
+                                print_n_space(Console.WindowWidth - 1 - get_battery_status().Length);
+                                windowWidth = Console.WindowWidth;
+                            }
+                            Console.SetCursorPosition(Console.WindowWidth - 9, 1);
+                            Library.printHourMinuteSecond(DateTime.Now);
+                            if (8 + DateTime.Now.DayOfWeek.ToString().Length + Library.getMonthName(DateTime.Now.Month).Length + DateTime.Now.Day.ToString().Length < Console.WindowWidth - 10 - get_battery_status().Length)
+                            {
+                                if ((Console.WindowWidth / 2) - 5 - (DateTime.Now.DayOfWeek.ToString().Length / 2) - (Library.getMonthName(DateTime.Now.Month).Length / 2) - (DateTime.Now.Day.ToString().Length / 2) > get_battery_status().Length + 1)
+                                    Console.SetCursorPosition((Console.WindowWidth / 2) - 5 - (DateTime.Now.DayOfWeek.ToString().Length / 2) - (Library.getMonthName(DateTime.Now.Month).Length / 2) - (DateTime.Now.Day.ToString().Length / 2), 1);
+                                else
+                                    Console.SetCursorPosition(get_battery_status().Length + 1, 1);
+                                Console.Write(DateTime.Now.DayOfWeek + ", " + Library.getMonthName(DateTime.Now.Month) + " " + DateTime.Now.Day + " " + DateTime.Now.Year + " ");
+                            }
                         }
-                        else
-                        {
-                            Console.SetCursorPosition(0, 1);
-                        }
-                        Console.Write(DateTime.Now);
                         Thread.Sleep(1000);
                     }
                     Console.CursorVisible = true;
                     Console.SetCursorPosition(start_cursor_left, start_cursor_top);
-                    password = Program.get_password_protocol();
+                    password = Security.get_password_protocol();
                     Console.SetCursorPosition(start_cursor_left, start_cursor_top);
                     print_n_space(password.Length);
                     Console.SetCursorPosition(start_cursor_left, start_cursor_top);
@@ -2986,13 +3060,9 @@ namespace cmd_Linux
                             }
                         }
                         if(clock.ElapsedMilliseconds >= 200 && password == "cmd_linux")
-                        {
                             Console.CursorVisible = true;
-                        }
                         else
-                        {
                             password = "cmd_linux";
-                        }
                     }
 
                     if(Console.CursorVisible == false)
@@ -3006,26 +3076,36 @@ namespace cmd_Linux
                             Console.SetCursorPosition(1, 1);
                             Console.Write(get_battery_status());
                         }
-                        if (Console.WindowWidth - 1 - DateTime.Now.ToString().Length >= 0)
+                        if (8 < Console.WindowWidth - 2 - get_battery_status().Length)
                         {
-                            Console.SetCursorPosition(Console.WindowWidth - 1 - DateTime.Now.ToString().Length, 1);
+                            if(windowWidth != Console.WindowWidth)
+                            {
+                                Console.SetCursorPosition(get_battery_status().Length + 1, 1);
+                                print_n_space(Console.WindowWidth - 1 - get_battery_status().Length);
+                                windowWidth = Console.WindowWidth;
+                            }
+                            Console.SetCursorPosition(Console.WindowWidth - 9, 1);
+                            Library.printHourMinuteSecond(DateTime.Now);
+                            if (8 + DateTime.Now.DayOfWeek.ToString().Length + Library.getMonthName(DateTime.Now.Month).Length + DateTime.Now.Day.ToString().Length < Console.WindowWidth - 10 - get_battery_status().Length)
+                            {
+                                if ((Console.WindowWidth / 2) - 5 - (DateTime.Now.DayOfWeek.ToString().Length / 2) - (Library.getMonthName(DateTime.Now.Month).Length / 2) - (DateTime.Now.Day.ToString().Length / 2) > get_battery_status().Length + 1)
+                                    Console.SetCursorPosition((Console.WindowWidth / 2) - 5 - (DateTime.Now.DayOfWeek.ToString().Length / 2) - (Library.getMonthName(DateTime.Now.Month).Length / 2) - (DateTime.Now.Day.ToString().Length / 2), 1);
+                                else
+                                    Console.SetCursorPosition(get_battery_status().Length + 1, 1);
+                                Console.Write(DateTime.Now.DayOfWeek + ", " + Library.getMonthName(DateTime.Now.Month) + " " + DateTime.Now.Day + " " + DateTime.Now.Year + " ");
+                            }
                         }
-                        else
-                        {
-                            Console.SetCursorPosition(0, 1);
-                        }
-                        Console.Write(DateTime.Now);
                         Thread.Sleep(1000);
                     }
                 }
             }
             Console.Clear();
-
+            Console.SetBufferSize(Console.WindowWidth, 300);
             Console.Title = "cmd Linux";
             return (0);
         } //OK
 
-        static private int execute_option(ref bool script_enable, ref int refresh_timer, ref bool auto_lock, ref bool genius_enable, ref bool private_mode, ref bool auto_log, ref bool cmd_print_user, ref bool cmd_print_path, ref bool cmd_print_time, ref int max_genius_data, string appdata_dir)
+        static private int execute_option(ref bool script_enable, ref int refresh_timer, ref bool auto_lock, ref bool genius_enable, ref bool private_mode, ref bool auto_log, ref bool cmd_print_user, ref bool cmd_print_path, ref bool cmd_print_time, ref int max_genius_data, ref string language, string appdata_dir)
         {
             bool running = true;
             int cursor_first_line = Console.CursorTop;
@@ -3035,13 +3115,13 @@ namespace cmd_Linux
             
             while(running)
             {
-                print_option_menu(cursor_first_line, line_select, script_enable, refresh_timer, auto_lock, genius_enable, private_mode, auto_log, cmd_print_user, cmd_print_path, cmd_print_time, max_genius_data);
+                print_option_menu(cursor_first_line, line_select, script_enable, refresh_timer, auto_lock, genius_enable, private_mode, auto_log, cmd_print_user, cmd_print_path, cmd_print_time, max_genius_data, language);
                 action = Console.ReadKey(true);
-                apply_option_menu_action(action, ref line_select, ref script_enable, ref refresh_timer, ref auto_lock, ref genius_enable, ref private_mode, ref running, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref max_genius_data);
+                apply_option_menu_action(action, ref line_select, ref script_enable, ref refresh_timer, ref auto_lock, ref genius_enable, ref private_mode, ref running, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref max_genius_data, ref language);
             }
 
             erase_option_menu(cursor_first_line);
-            save_option(script_enable, refresh_timer, auto_lock, genius_enable, private_mode, auto_log, cmd_print_user, cmd_print_path, cmd_print_time, max_genius_data, appdata_dir);
+            save_option(script_enable, refresh_timer, auto_lock, genius_enable, private_mode, auto_log, cmd_print_user, cmd_print_path, cmd_print_time, max_genius_data, language, appdata_dir);
             Console.CursorVisible = true;
             return (0);
         } //OK
@@ -3315,7 +3395,7 @@ namespace cmd_Linux
                         Console.SetCursorPosition(0, Console.CursorTop);
                         if (endtime_s <= 0)
                         {
-                            ShowApp(Assembly.GetExecutingAssembly().Location);
+                            Library.ShowApp(Assembly.GetExecutingAssembly().Location);
                             Console.WriteLine("> delay ended at " + get_time_format(DateTime.Now.Hour,DateTime.Now.Minute,DateTime.Now.Second));
                             Console.Beep(1000, 1);
                         }
@@ -3607,6 +3687,1088 @@ namespace cmd_Linux
             return (0);
         } //OK
 
+        static private int execute_zip(string[] cmd)
+        {
+            string destName = "";
+            int attempts = 1;
+
+            if(cmd.Length > 2)
+            {
+                #region /add
+                /*if (cmd[1] == "/add")
+                {
+                    if(cmd.Length > 3)
+                    {
+                        if (File.Exists(cmd[2]) || Directory.Exists(cmd[2]))
+                        {
+                            if(get_format_file(cmd[3]) == ".zip")
+                            {
+                                if(File.Exists(cmd[3]))
+                                {
+                                    destName = "archive";
+                                    while (File.Exists(Directory.GetCurrentDirectory() + "/" + destName) || Directory.Exists(Directory.GetCurrentDirectory() + "/" + destName))
+                                    {
+                                        destName = "archive(" + attempts + ")";
+                                        attempts++;
+                                    }
+                                    if (execute_zip(new string[4] { "zip", "/extract", cmd[3], destName }) == 0)
+                                    {
+                                        if (execute_rm(new string[2] { "zip", cmd[3] }) == 0)
+                                        {
+                                            if (File.Exists(cmd[2]))
+                                                execute_cp(new string[3] { "zip", cmd[2], destName });
+                                            else
+                                                execute_cpdir(new string[3] { "zip", cmd[2], destName });
+                                            execute_zip(new string[4] { "zip", "/mk", destName, cmd[3] });
+                                        } 
+                                    }
+                                }
+                                else if(Directory.Exists(cmd[3]))
+                                {
+                                    Console.WriteLine("> " + cmd[0] + ": " + cmd[3] + ": is a directory");
+                                    return (1);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("> " + cmd[0] + ": " + cmd[3] + ": No such file or directory");
+                                    return (1);
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("> " + cmd[0] + ": " + cmd[3] + ": wrong format");
+                                return (1);
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("> " + cmd[0] + ": " + cmd[2] + ": No such file or directory");
+                            return (1);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("> zip: /add: Invalid number of argument");
+                        return (1);
+                    }
+                }*/
+                #endregion
+                if (cmd[1] == "/mk")
+                {
+                    #region /mk
+                    if (File.Exists(cmd[2]) || Directory.Exists(cmd[2]))
+                    {
+                        if(cmd.Length > 3)
+                        {
+                            if (get_format_file(cmd[3]) != ".zip")
+                                cmd[3] += ".zip";
+
+                            if(!is_valid_name(cmd[3]))
+                            {
+                                Console.WriteLine("> " + cmd[0] + ": " + cmd[3] + ": invalid name");
+                                return (1);
+                            }
+
+                            if(cmd[2] == cmd[3])
+                            {
+                                Console.WriteLine("> " + cmd[0] + ": source and destination must have different names");
+                                return (1);
+                            }
+
+                            if (File.Exists(cmd[3]) || Directory.Exists(cmd[3]))
+                            {
+                                Console.WriteLine("> " + cmd[0] + ": " + cmd[3] + ": already exists");
+                                return (1);
+                            }
+
+                            destName = "archive";
+                            while (File.Exists(Directory.GetCurrentDirectory() + "/" + destName) || Directory.Exists(Directory.GetCurrentDirectory() + "/" + destName))
+                            {
+                                destName = "archive(" + attempts + ")";
+                                attempts++;
+                            }
+
+                            try
+                            {
+                                Directory.CreateDirectory(destName);
+                                if(File.Exists(cmd[2]))                                 
+                                    execute_cp(new string[3] {"zip", cmd[2], destName});
+                                else
+                                    execute_cpdir(new string[3] { "zip", cmd[2], destName });
+
+                                ZipFile.CreateFromDirectory(destName, cmd[3]);
+
+                                execute_rmdir(new string[2] { "zip", destName });
+                            }
+                            catch(Exception)
+                            {
+                                Console.WriteLine("> " + cmd[0] + ": " + cmd[2] + ": fail to compress");
+                                if(Directory.Exists(destName))
+                                    execute_rmdir(new string[2] { "zip", destName });
+                                return (1);
+                            }
+                        }
+                        else
+                        {
+                            if (cmd[2] == "/" || cmd[2] == "\\")
+                                cmd[2] = "C:/";
+                            if (get_name_file(cmd[2]) == "")
+                                cmd[2] = cmd[2].Substring(0, cmd[2].Length - 1);
+                            string zipFileName = get_name_file(cmd[2]) + ".zip";
+                            attempts = 1;
+                            while (File.Exists(Directory.GetCurrentDirectory() + "/" + zipFileName) || Directory.Exists(Directory.GetCurrentDirectory() + "/" + zipFileName))
+                            {
+                                zipFileName = get_name_file(cmd[2]) + "(" + attempts + ").zip";
+                                attempts++;
+                            }
+                            destName = "archive";
+                            attempts = 1;
+                            while (File.Exists(Directory.GetCurrentDirectory() + "/" + destName) || Directory.Exists(Directory.GetCurrentDirectory() + "/" + destName))
+                            {
+                                destName = "archive(" + attempts + ")";
+                                attempts++;
+                            }
+                            try
+                            {
+                                Directory.CreateDirectory(destName);
+                                if (File.Exists(cmd[2]))
+                                    execute_cp(new string[3] { "zip", cmd[2], destName });
+                                else
+                                    execute_cpdir(new string[3] { "zip", cmd[2], destName });
+
+                                ZipFile.CreateFromDirectory(destName, zipFileName);
+
+                                execute_rmdir(new string[2] { "zip", destName });
+                            }
+                            catch (Exception)
+                            {
+                                Console.WriteLine("> " + cmd[0] + ": " + cmd[2] + ": fail to compress");
+                                if (Directory.Exists(destName))
+                                    execute_rmdir(new string[2] { "zip", destName });
+                                return (1);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("> " + cmd[0] + ": " + cmd[2] + ": No such file or directory");
+                        return (1);
+                    }
+                    #endregion
+                }
+                else if(cmd[1] == "/extract")
+                {
+                    #region /extract
+                    if (File.Exists(cmd[2]))
+                    {
+                        if(get_format_file(cmd[2]) == ".zip")
+                        {
+                            if (cmd.Length > 3)
+                            {
+                                if (File.Exists(cmd[3]) || Directory.Exists(cmd[3]))
+                                {
+                                    Console.WriteLine("> " + cmd[0] + ": " + cmd[3] + ": already exists");
+                                    return (1);
+                                }
+
+                                try
+                                {
+                                    ZipFile.ExtractToDirectory(cmd[2], cmd[3]);
+                                }
+                                catch (Exception)
+                                {
+                                    Console.WriteLine("> " + cmd[0] + ": " + cmd[2] + ": fail to extract");
+                                    return (1);
+                                }
+                            }
+                            else
+                            {
+                                destName = get_name_file(cmd[2]);
+                                if (File.Exists(destName) || Directory.Exists(destName))
+                                {
+                                    destName = destName.Substring(0, destName.Length - 4);
+                                    while (File.Exists(Directory.GetCurrentDirectory() + "/" + destName) || Directory.Exists(Directory.GetCurrentDirectory() + "/" + destName))
+                                    {
+                                        destName = get_name_file(cmd[2]) + "(" + attempts + ")";
+                                        attempts++;
+                                    }
+                                }
+
+                                try
+                                {
+                                    ZipFile.ExtractToDirectory(cmd[2], destName);
+                                }
+                                catch (Exception)
+                                {
+                                    Console.WriteLine("> " + cmd[0] + ": " + cmd[2] + ": fail to extract");
+                                    return (1);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("> " + cmd[0] + ": " + cmd[2] + ": wrong format");
+                            return (1);
+                        }
+                    }
+                    else if (Directory.Exists(cmd[2]))
+                    {
+                        Console.WriteLine("> " + cmd[0] + ": " + cmd[2] + ": is a directory");
+                        return (1);
+                    }
+                    else
+                    {
+                        Console.WriteLine("> " + cmd[0] + ": " + cmd[2] + ": No such file or directory");
+                        return (1);
+                    }
+                    #endregion
+                }
+            }
+            else
+            {
+                Console.WriteLine("> zip: Invalid number of argument");
+                return (1);
+            }
+
+            return (0);
+        }
+
+        static private int execute_ascii(string[] cmd)
+        {
+            if (cmd.Length == 1)
+            {
+                Console.Write("> ");
+                for (int i = 0; i < 256; i++)
+                {
+                    Console.Write(getNumberOnNChar(i, 3) + " - " + getCharValue(i));
+                    print_n_space(5 - getCharValue(i).Length);
+                    if ((i + 1) % 5 == 0 && i < 255)
+                        Console.Write("\n> ");
+                }
+                Console.WriteLine();
+            }
+            else
+            {
+                int nbr = 0;
+                for (int i = 1; i < cmd.Length; i++)
+                {
+                    if (cmd[i].Length == 1)
+                        Console.WriteLine("> " + (int)(cmd[i][0]) + " - " + cmd[i]);
+                    else
+                    {
+                        try
+                        {
+                            nbr = Convert.ToInt32(cmd[i]);
+                            if (nbr >= 0 && nbr < 256)
+                                Console.WriteLine("> " + nbr + " - " + getCharValue(nbr));
+                            else
+                            {
+                                Console.WriteLine("> ascii: " + cmd[i] + ": Invalid number (0 - 255)");
+                                if (i == cmd.Length - 1)
+                                    return (1);
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            long result = 0;
+                            try
+                            {
+                                if (Calculator.is_math_expression(new string[1] { cmd[i] }) && Calculator.get_result(new string[1] { cmd[i] }, ref result) == 0)
+                                {
+                                    if (result >= 0 && result < 256)
+                                        Console.WriteLine("> " + result + " - " + getCharValue((int)result));
+                                    else
+                                    {
+                                        Console.WriteLine("> ascii: " + (result == 0 ? cmd[i] : result + "") + ": Invalid number (0 - 255)");
+                                        if (i == cmd.Length - 1)
+                                            return (1);
+                                    }
+                                }
+                                else
+                                {
+                                    Console.WriteLine("> ascii: " + cmd[i] + ": Invalid argument");
+                                    if (i == cmd.Length - 1)
+                                        return (1);
+                                }
+                            }
+                            catch(Exception)
+                            {
+                                Console.WriteLine("> ascii: " + cmd[i] + ": Invalid argument");
+                                if (i == cmd.Length - 1)
+                                    return (1);
+                            }
+                        }
+                    }
+                }
+            }
+            return (0);
+        }//OK
+
+        static private int execute_reminder(string[] cmd, string appdata_dir, ref NotificationManager notificationManager)
+        {
+            //reminder file: yyyy_mm_dd_hh_mm_ss
+            if(cmd.Length > 1)
+            {
+                DateTime date = new DateTime(1970, 1, 1);
+            
+                if(cmd[1] == "/add")
+                { //reminder /add "Adding reminder" tomorrow
+                    #region /add
+                    if (cmd.Length >= 3)
+                    {
+                        if(cmd.Length > 3)
+                        {
+                            if(Library.getYearMonthDay(cmd[3], ref date))
+                            {
+                                if (cmd.Length > 4)
+                                {
+                                    if(!Library.getHourMinuteSecond(cmd[4], ref date))
+                                       date = new DateTime(date.Year, date.Month, date.Day, DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second);
+
+                                }
+                                else
+                                    date = new DateTime(date.Year, date.Month, date.Day, DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second);
+                            }
+                            else if(Library.getHourMinuteSecond(cmd[3], ref date))
+                            {
+                                if (cmd.Length > 4)
+                                {
+                                    if(!Library.getYearMonthDay(cmd[4], ref date))
+                                       date = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, date.Hour, date.Minute, date.Second);
+                                }
+                                else
+                                    date = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, date.Hour, date.Minute, date.Second);
+                            }
+                        }
+                        
+                        if(date != new DateTime(1970, 1, 1))
+                        {
+                            if (notificationManager.addNotification(appdata_dir, date, "COLOR", "RED") &&
+                            notificationManager.addNotification(appdata_dir, date, "PRINT", "reminder: " + cmd[2]) &&
+                            notificationManager.addNotification(appdata_dir, date, "NOTIF", " "))
+                                Console.WriteLine("> " + cmd[0] + ": new reminder \"" + cmd[2] + "\" at " + Library.dateFormat(date));
+                            else
+                                Console.WriteLine("> " + cmd[0] + ": " + cmd[2] + ": can't save reminder");
+                        }
+                        else
+                        {
+                            Console.WriteLine("> " + cmd[0] + ": " + Library.concArrToString(cmd, 3, cmd.Length, true) + ": Invalid date");
+                            return(1);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("> " + cmd[0] + ": " + cmd[1] + ": argument missing");
+                        return(1);
+                    }
+                    #endregion
+                }
+                else if(cmd[1] == "/rm")
+                {//reminder /rm date ["Reminder to remove]
+                    #region /rm
+                    int index = 2;
+                    bool exactYear = false;
+                    bool exactMonth = false;
+                    bool exactDay = false;
+                    bool exactHour = false;
+                    bool exactMin = false;
+                    bool exactSec = false;
+                    if(cmd.Length == 2)
+                    {
+                        Console.WriteLine("> " + cmd[0] + ": " + cmd[1] + ": argument missing");
+                        return (1);
+                    }
+
+                    if (Library.getYearMonthDay(cmd[2], ref date))
+                    {
+                        exactYear = true;
+                        exactMonth = cmd[2].Split('/').Length > 1;
+                        exactDay = cmd[2].Split('/').Length > 2;
+                        if (cmd.Length > 3 && Library.getHourMinuteSecond(cmd[3], ref date))
+                        {
+                            index = 3;
+                            exactHour = true;
+                            exactMin = cmd[3].Split(':').Length > 1;
+                            exactSec = cmd[3].Split(':').Length > 2;
+                        }
+                        else
+                            date = new DateTime(date.Year, date.Month, date.Day, DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second);
+                    }
+                    else if (Library.getHourMinuteSecond(cmd[2], ref date))
+                    {
+                        exactHour = true;
+                        exactMin = cmd[2].Split(':').Length > 1;
+                        exactSec = cmd[2].Split(':').Length > 2;
+                        if (cmd.Length > 3 && Library.getYearMonthDay(cmd[3], ref date))
+                        {
+                            exactYear = true;
+                            exactMonth = cmd[3].Split('/').Length > 1;
+                            exactDay = cmd[3].Split('/').Length > 2;
+                            index = 3;
+                        }
+                        else
+                            date = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, date.Hour, date.Minute, date.Second);
+                    }
+
+                    if(date != new DateTime(1970, 1, 1))
+                    {
+                        DateTime reminderDate = date;
+                        if (index < cmd.Length - 1)
+                        {
+                            index = notificationManager.searchNotification(date, "PRINT", "reminder: " + cmd[cmd.Length - 1], exactYear, exactMonth, exactDay, exactHour, exactMin, exactSec);
+                            if(index != -1)
+                            {
+                                reminderDate = notificationManager.getDate()[index];
+                                notificationManager.removeNotification(appdata_dir, index - 1);
+                                notificationManager.removeNotification(appdata_dir, index);
+                                if(notificationManager.removeNotification(appdata_dir, index - 1))
+                                    Console.WriteLine("> " + cmd[0] + ": reminder \"" + cmd[cmd.Length - 1] + "\" on " + reminderDate + " removed");
+                                else
+                                {
+                                    Console.WriteLine("> " + cmd[0] + ": failed to remove \"" + cmd[cmd.Length - 1] + "\" on " + date);
+                                    return (1);
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("> " + cmd[0] + ": reminder \"" + cmd[cmd.Length - 1] + "\" on " + date + " not found");
+                                return (1);
+                            }
+                        }
+                        else
+                        {
+                            string reminderContent = "";
+                            index = notificationManager.searchNotification(date, "PRINT", exactYear, exactMonth, exactDay, exactHour, exactMin, exactSec);
+                            if(index == -1)
+                            {
+                                Console.WriteLine("> " + cmd[0] + ": no reminder found on " + date);
+                                return (1);
+                            }
+                            while(index != -1)
+                            {
+                                reminderContent = notificationManager.getContent()[index];
+                                reminderDate = notificationManager.getDate()[index];
+                                if (reminderContent.Length >= 10)
+                                    reminderContent = reminderContent.Substring(10);
+                                notificationManager.removeNotification(appdata_dir, index - 1);
+                                notificationManager.removeNotification(appdata_dir, index);
+                                if (notificationManager.removeNotification(appdata_dir, index - 1))
+                                    Console.WriteLine("> " + cmd[0] + ": reminder \"" + reminderContent + "\" on " + reminderDate + " removed");
+                                else
+                                {
+                                    Console.WriteLine("> " + cmd[0] + ": failed to remove \"" + reminderContent + "\" on " + date);
+                                    return (1);
+                                }
+                                index = notificationManager.searchNotification(date, "PRINT", exactYear, exactMonth, exactDay, exactHour, exactMin, exactSec);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("> " + cmd[0] + ": " + cmd[2] + ": Invalid date");
+                        return (1);
+                    }
+                    #endregion
+                }
+                else if(cmd[1] == "/display")
+                {//reminder /display
+                    #region /display
+                    List<string> allContent = notificationManager.getContent();
+                    List<string> allContentType = notificationManager.getContentType();
+                    List<DateTime> allDates = notificationManager.getDate();
+                    for (int i = 0; i < allContentType.Count; i++)
+                    {
+                        if(allContentType[i] == "PRINT" && allContent[i].Length >= 10 && allContent[i].Substring(0, 8) == "reminder")
+                        {
+                            Console.Write("> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.WriteLine(allDates[i]);
+                            Console.ResetColor();
+                            Console.WriteLine("> " + allContent[i].Substring(10));
+                        }
+                    }
+                    #endregion
+                }
+                else
+                {
+                    Console.WriteLine("> " + cmd[0] + ": " + cmd[1] + ": Invalid argument");
+                    return(1);
+                }
+            }
+            else
+            {
+                Console.WriteLine("> reminder: Invalid number of arguments");
+                return(1);
+            }
+            return(0);
+        } //OK
+
+        static private int execute_link(string[] cmd, ref List<Link> allLinks)
+        {
+            if (cmd.Length > 1)
+            {
+                if (cmd[1] == "/mk")
+                {//link /mk C:/ root
+                    if (cmd.Length == 4)
+                    {
+                        if(cmd[3].Contains('~'))
+                        {
+                            Console.WriteLine("> " + cmd[0] + ": " + cmd[3] + ": character '~' is forbidden");
+                            cmd[3] = Library.removeAllChar(cmd[3], '~');
+                            if (cmd[3].Length == 0)
+                                return (1);
+                            Console.Write("> " + cmd[0] + ": use \"" + cmd[3] + "\" instead? (Y/N)");
+                            char key_pressed = Console.ReadKey().KeyChar;
+                            Console.WriteLine();
+                            if (key_pressed != 'y' && key_pressed != 'Y')
+                                return (1); 
+                        }
+                        int i = 0;
+                        while (i < allLinks.Count && allLinks[i].name != '~' + cmd[3])
+                            i++;
+                        if (i < allLinks.Count)
+                            allLinks.RemoveAt(i);
+                        allLinks.Add(new Link(cmd[3], (File.Exists(cmd[2]) ? Path.GetFullPath(cmd[2]) : Directory.Exists(cmd[2]) ? Path.GetFullPath(cmd[2]) : cmd[2])));
+                        Console.WriteLine("> new link added: ~" + cmd[3] + " = " + cmd[2]);
+                    }
+                    else
+                    {
+                        Console.WriteLine("> " + cmd[0] + ": " + cmd[1] + ": Invalid number of arguments");
+                        return (1);
+                    }
+                }
+                else if (cmd[1] == "/rm")
+                {//link /rm root
+                    if (cmd.Length >= 3)
+                    {
+                        for(int j = 2; j < cmd.Length; j++)
+                        {
+                            int i = 0;
+                            while (i < allLinks.Count && allLinks[i].name != '~' + cmd[j])
+                                i++;
+                            if (i == allLinks.Count)
+                            {
+                                Console.WriteLine("> " + cmd[0] + ": ~" + cmd[j] + ": link not found");
+                                return (1);
+                            }
+                            else
+                            {
+                                allLinks.RemoveAt(i);
+                                Console.WriteLine("> ~" + cmd[j] + ": link removed");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("> " + cmd[0] + ": " + cmd[1] + ": Invalid number of arguments");
+                        return (1);
+                    }
+                }
+                else if (cmd[1] == "/display")
+                {//link /display
+                    if (allLinks.Count == 0)
+                        Console.WriteLine("> " + cmd[0] + ": no link created");
+                    else
+                    {
+                        for (int i = 0; i < allLinks.Count; i++)
+                            Console.WriteLine("> " + allLinks[i].name + " = " + allLinks[i].target);
+                    }
+                }
+                else
+                {
+                    int i = 0;
+                    while (i < allLinks.Count && allLinks[i].name != "~")
+                        i++;
+                    if (i < allLinks.Count)
+                        allLinks.RemoveAt(i);
+                    allLinks.Add(new Link("", (File.Exists(cmd[1]) ? Path.GetFullPath(cmd[1]) : Directory.Exists(cmd[1]) ? Path.GetFullPath(cmd[1]) : cmd[1])));
+                    Console.WriteLine("> new default quick link: " + cmd[1]);
+                }
+            }
+            else
+            {
+                Console.WriteLine("> link: Invalid number of arguments");
+                return (1);
+            }
+            return (0);
+        } //OK
+
+        static private int execute_dice(string[] cmd)
+        {
+            Random rnd = new Random();
+            int throwNbr = 1;
+            int minValue = 1;
+            int maxValue = 6;
+            int resultNbr = 0;
+            ConsoleKeyInfo key_pressed = new ConsoleKeyInfo();
+
+            if (cmd.Length > 1)
+            {
+                for (int i = 1; i < cmd.Length; i++)
+                {
+                    if (cmd[i].Length > 1 && cmd[i][0] == 'x')
+                    {
+                        try
+                        {
+                            throwNbr = Convert.ToInt32(cmd[i].Substring(1));
+                        }
+                        catch (Exception)
+                        {
+                            long result = 0;
+                            try
+                            {
+                                if (Calculator.is_math_expression(new string[1] { cmd[i].Substring(1) }) && Calculator.get_result(new string[1] { cmd[i].Substring(1) }, ref result) == 0)
+                                {
+                                    if(result > 0)
+                                        throwNbr = (int)result;
+                                    else
+                                    {
+                                        Console.WriteLine("> " + cmd[0] + ": " + cmd[i] + ": Invalid throw number");
+                                        return (1);
+                                    }
+                                }
+                                else
+                                {
+                                    Console.WriteLine("> " + cmd[0] + ": " + cmd[i] + ": Invalid throw number");
+                                    return (1);
+                                }
+                            }
+                            catch (Exception)
+                            {
+                                Console.WriteLine("> " + cmd[0] + ": " + cmd[i] + ": Invalid throw number");
+                                return (1);
+                            }
+                        }
+                    }
+                    else if (cmd[i].Length > 2)
+                    {
+                        string[] minmax = cmd[i].Split('/');
+                        if (minmax.Length == 2)
+                        {
+                            try
+                            {
+                                minValue = Convert.ToInt32(minmax[0]);
+                            }
+                            catch (Exception)
+                            {
+                                Console.WriteLine("> " + cmd[0] + ": " + minmax[0] + ": invalid minimum value");
+                                return (1);
+                            }
+                            try
+                            {
+                                maxValue = Convert.ToInt32(minmax[1]);
+                            }
+                            catch (Exception)
+                            {
+                                Console.WriteLine("> " + cmd[0] + ": " + minmax[1] + ": invalid maximum value");
+                                return (1);
+                            }
+                            if (minValue > maxValue)
+                            {
+                                Console.WriteLine("> " + cmd[0] + ": " + cmd[i] + ": minimum value is greater that maximum value");
+                                return (1);
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("> " + cmd[0] + ": " + cmd[i] + ": Invalid argument");
+                            return (1);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("> " + cmd[0] + ": " + cmd[i] + ": Invalid argument");
+                        return (1);
+                    }
+                }
+            }
+
+            Console.WriteLine("> dice: [" + minValue + "-" + maxValue + "]");
+
+            for (int i = 0; i < throwNbr && key_pressed.Key != ConsoleKey.Escape; i++)
+            {
+                int curDice = rnd.Next(minValue, maxValue + 1);
+                resultNbr += curDice;
+                Console.WriteLine("> dice " + (i + 1) + ": " + curDice);
+                if (Console.KeyAvailable)
+                    key_pressed = Console.ReadKey(true);
+            }
+
+            Console.WriteLine("> Total: " + resultNbr);
+            return (0);
+        } //OK
+
+        static private int execute_tree(string[] cmd)
+        {
+            if (cmd.Length == 1)
+            {
+                Console.WriteLine("> " + Directory.GetCurrentDirectory());
+                display_tree(Directory.GetCurrentDirectory(), 0);
+            }
+            else
+            {
+                for (int i = 1; i < cmd.Length; i++)
+                {
+                    if (cmd.Length > 2)
+                    {
+                        Console.Write("> ");
+                        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                        Console.WriteLine(cmd[0] + " " + cmd[i]);
+                        Console.ResetColor();
+                    }
+
+                    if (File.Exists(cmd[i]))
+                        Console.WriteLine("> " + cmd[i]);
+                    else if (Directory.Exists(cmd[i]))
+                    {
+                        Console.Write("> ");
+                        Console.ForegroundColor = ConsoleColor.Blue;
+                        Console.WriteLine(cmd[i] + "/");
+                        Console.ResetColor();
+                        display_tree(cmd[i], 0);
+                    }
+                    else
+                    {
+                        Console.WriteLine("> " + cmd[0] + ": " + cmd[i] + ": No such file or directory");
+                        if (i == cmd.Length - 1)
+                            return (1);
+                    }
+                }
+            }
+            return (0);
+        } //OK
+
+        static private int execute_hash(string[] cmd)
+        {
+            if (cmd.Length > 1)
+            {
+                for (int i = 1; i < cmd.Length; i++)
+                {
+                    if (File.Exists(cmd[i]))
+                    {
+                        List<string> content = Library.getFileContent(cmd[i]);
+                        string allContent = "";
+                        for (int j = 0; j < content.Count; j++)
+                            allContent += content[j];
+                        if (allContent.Length > 0)
+                        {
+                            allContent = allContent.GetHashCode().ToString("X");
+                            int attempt = 0;
+                            string newFileName = get_name_file(Library.extractShorterPath(cmd[i])) + "_hash" + get_format_file(Library.extractShorterPath(cmd[i]));
+                            while (File.Exists(Directory.GetCurrentDirectory() + "/" + newFileName) || Directory.Exists(Directory.GetCurrentDirectory() + "/" + newFileName))
+                            {
+                                attempt++;
+                                newFileName = get_name_file(Library.extractShorterPath(cmd[i])) + "_hash(" + attempt + ")" + get_format_file(Library.extractShorterPath(cmd[i]));
+                            }
+                            content = new List<string>();
+                            content.Add(allContent);
+                            Library.saveFile(newFileName, content);
+                            Console.WriteLine("> " + cmd[0] + ": " + Library.extractShorterPath(cmd[i]) + ": hashed file saved as " + newFileName);
+                        }
+                        else
+                        {
+                            Console.WriteLine("> " + cmd[0] + ": " + Library.extractShorterPath(cmd[i]) + ": empty file");
+                            if (i == cmd.Length - 1)
+                                return (1);
+                        }
+                    }
+                    else if (cmd[i].Length > 0)
+                        Console.WriteLine("> " + cmd[i].GetHashCode().ToString("X"));
+                    else
+                    {
+                        Console.WriteLine("> " + cmd[0] + ": " + cmd[i] + ": Invalid argument");
+                        if (i == cmd.Length - 1)
+                            return (1);
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("> hash: Invalid number of argument");
+                return (1);
+            }
+            return (0);
+        } //OK
+
+        static private int execute_crypto(string[] cmd)
+        {
+            string encryption = "";
+            string password = "";
+            List<string> content = new List<string>();
+
+            if (cmd.Length > 1)
+            {
+                if (cmd[1] == "/encrypt")
+                {
+                    if (cmd.Length > 2)
+                    {
+                        if (File.Exists(cmd[2]))
+                        {
+                            content = Library.getFileContent(cmd[2]);
+                            encryption = Library.concListToString(content, 0, content.Count);
+                        }
+                        else
+                            encryption = cmd[2];
+
+                        if (encryption.Length > 0)
+                        {
+                            if (cmd.Length > 3)
+                                password = cmd[3];
+                            else
+                            {
+                                Console.Write("> Enter password: ");//function to hide password entry
+                                password = Console.ReadLine();
+                            }
+
+                            if (password.Length > 0)
+                            {
+                                encryption = Library.Encrypt(encryption, password);
+                                if(encryption != "")
+                                {
+                                    if (File.Exists(cmd[2]))
+                                        Library.saveFile(get_name_file(cmd[2]) + "_encrypted" + get_format_file(cmd[2]), new List<string>() { encryption });
+                                    else
+                                        Console.WriteLine("> " + encryption);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("> " + cmd[0] + ": Wrong password");
+                                    return (1);
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("> " + cmd[0] + ": " + cmd[1] + ": password missing");
+                                return (1);
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("> " + cmd[0] + ": " + cmd[2] + ": too short argument");
+                            return (1);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("> " + cmd[0] + ": " + cmd[1] + ": Invalid number of arguments");
+                        return (1);
+                    }
+                }
+                else if (cmd[1] == "/decrypt")
+                {
+                    if (cmd.Length > 2)
+                    {
+                        if (File.Exists(cmd[2]))
+                        {
+                            content = Library.getFileContent(cmd[2]);
+                            encryption = Library.concListToString(content, 0, content.Count);
+                        }
+                        else
+                            encryption = cmd[2];
+
+                        if (encryption.Length > 0)
+                        {
+                            if (cmd.Length > 3)
+                                password = cmd[3];
+                            else
+                            {
+                                Console.Write("> Enter password: ");//function to hide password entry
+                                password = Console.ReadLine();
+                            }
+
+                            if (password.Length > 0)
+                            {
+                                encryption = Library.Decrypt(encryption, password);
+                                if(encryption != "")
+                                {
+                                    if (File.Exists(cmd[2]))
+                                        Library.saveFile(get_name_file(cmd[2]) + "_decrypted" + get_format_file(cmd[2]), new List<string>() { encryption });
+                                    else
+                                        Console.WriteLine("> " + encryption);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("> " + cmd[0] + ": Wrong password");
+                                    return (1);
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("> " + cmd[0] + ": " + cmd[1] + ": password missing");
+                                return (1);
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("> " + cmd[0] + ": " + cmd[2] + ": too short argument");
+                            return (1);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("> " + cmd[0] + ": " + cmd[1] + ": Invalid number of arguments");
+                        return (1);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("> " + cmd[0] + ": " + cmd[1] + ": Invalid argument");
+                    return (1);
+                }
+            }
+            else
+            {
+                Console.WriteLine("> crypto: Invalid number of arguments");
+                return (1);
+            }
+            return (0);
+        } //OK
+
+        static private int execute_if(string[] cmd, string desktop_dir, string appdata_dir, ref bool working, ref bool superuser, ref long last_result, ref List<Genius_data> genius_data, ref bool script_enable, ref bool genius_enable, ref bool private_mode, ref int refresh_timer, ref bool auto_lock, ref bool auto_log, ref bool cmd_print_user, ref bool cmd_print_path, ref bool cmd_print_time, ref string[] previous_directory, ref int previous_directory_pointer, ref int max_genius_data, ref string language, ref List<Link> allLinks, ref NotificationManager notificationManager)
+        {
+            int thenIndex = 0;
+            int elseIndex = 0;
+            bool condition = true;
+            string evaluation = "";
+            string execution = "";
+
+            if(cmd.Length > 1)
+            {
+                thenIndex = Library.lastStringIndex(cmd, "then");
+                elseIndex = Library.lastStringIndex(cmd, "else");
+                if(thenIndex > elseIndex && elseIndex != -1)
+                {
+                    Console.WriteLine("> if: then statement must be before else statement");
+                    return (1);
+                }
+                evaluation = Library.concArrToString(cmd, 1, thenIndex == -1 ? (elseIndex == -1 ? cmd.Length : elseIndex) : thenIndex, true);
+                condition = evaluateExpression(evaluation, desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager);
+                if(condition)
+                {
+                    if(thenIndex != -1)
+                    {
+                        execution = Library.concArrToString(cmd, thenIndex + 1, elseIndex == -1 ? cmd.Length : elseIndex, true);
+                        Execution.execute_input(Interpreter.parse_input(execution, appdata_dir), desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager);
+                    }
+                }
+                else
+                {
+                    if(elseIndex != -1 && elseIndex < cmd.Length - 1)
+                    {
+                        execution = Library.concArrToString(cmd, elseIndex + 1, cmd.Length, true);
+                        Execution.execute_input(Interpreter.parse_input(execution, appdata_dir), desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager);
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("> if: Invalid number of arguments");
+                return (1);
+            }
+            return (0);
+        }
+
+        static private int execute_while(string[] cmd, string desktop_dir, string appdata_dir, ref bool working, ref bool superuser, ref long last_result, ref List<Genius_data> genius_data, ref bool script_enable, ref bool genius_enable, ref bool private_mode, ref int refresh_timer, ref bool auto_lock, ref bool auto_log, ref bool cmd_print_user, ref bool cmd_print_path, ref bool cmd_print_time, ref string[] previous_directory, ref int previous_directory_pointer, ref int max_genius_data, ref string language, ref List<Link> allLinks, ref NotificationManager notificationManager)
+        {
+            int doIndex = 0;
+            bool condition = true;
+            string evaluation = "";
+            string execution = "";
+            ConsoleKeyInfo key_pressed = new ConsoleKeyInfo();
+
+            if (cmd.Length > 1)
+            {
+                doIndex = Library.lastStringIndex(cmd, "do");
+                if (doIndex == -1)
+                {
+                    Console.WriteLine("> while: do statement not found");
+                    return (1);
+                }
+                evaluation = Library.concArrToString(cmd, 1, doIndex, true);
+                condition = evaluateExpression(evaluation, desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager);
+                while(condition)
+                {
+                    execution = Library.concArrToString(cmd, doIndex + 1, cmd.Length, true);
+                    Execution.execute_input(Interpreter.parse_input(execution, appdata_dir), desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager);
+                    if (Console.KeyAvailable)
+                        key_pressed = Console.ReadKey(true);
+                    condition = key_pressed.Key != ConsoleKey.Escape && evaluateExpression(evaluation, desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager);
+                }
+            }
+            else
+            {
+                Console.WriteLine("> while: Invalid number of arguments");
+                return (1);
+            }
+            return (0);
+        }
+
+        static private int execute_for(string[] cmd, string desktop_dir, string appdata_dir, ref bool working, ref bool superuser, ref long last_result, ref List<Genius_data> genius_data, ref bool script_enable, ref bool genius_enable, ref bool private_mode, ref int refresh_timer, ref bool auto_lock, ref bool auto_log, ref bool cmd_print_user, ref bool cmd_print_path, ref bool cmd_print_time, ref string[] previous_directory, ref int previous_directory_pointer, ref int max_genius_data, ref string language, ref List<Link> allLinks, ref NotificationManager notificationManager)
+        {
+            int toIndex = 0;
+            int doIndex = 0;
+            long index = 0;
+            long init = 0;
+            long limit = -1;
+            string execution = "";
+            ConsoleKeyInfo key_pressed = new ConsoleKeyInfo();
+
+            if (cmd.Length > 1)
+            {
+                toIndex = Library.lastStringIndex(cmd, "to");
+                doIndex = Library.lastStringIndex(cmd, "do");
+                if (doIndex == -1)
+                {
+                    Console.WriteLine("> for: do statement not found");
+                    return (1);
+                }
+                if (doIndex < toIndex)
+                {
+                    Console.WriteLine("> for: do statement not found must be after to statement");
+                    return (1);
+                }
+                if(toIndex != -1)
+                {
+                    if(Calculator.get_result(new string[1] {Library.concArrToString(cmd, 1, toIndex)}, ref init) == 1)
+                    {
+                        Console.WriteLine("> for: " + Library.concArrToString(cmd, 1, toIndex) + ": Invalid index value");
+                        return (1);
+                    }
+                    if (Calculator.get_result(new string[1] { Library.concArrToString(cmd, toIndex + 1, doIndex) }, ref limit) == 1)
+                    {
+                        Console.WriteLine("> for: " + Library.concArrToString(cmd, toIndex + 1, doIndex) + ": Invalid limit index value");
+                        return (1);
+                    }
+                }
+                if(index < limit || toIndex == -1)
+                {
+                    for (index = init; (index < limit || toIndex == -1) && key_pressed.Key != ConsoleKey.Escape; index++)
+                    {
+                        execution = Library.concArrToString(cmd, doIndex + 1, cmd.Length, true);
+                        Execution.execute_input(Interpreter.parse_input(execution, appdata_dir), desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager);
+                        if (Console.KeyAvailable)
+                            key_pressed = Console.ReadKey(true);
+                    }
+                }
+                else
+                {
+                    for (index = init; index > limit && key_pressed.Key != ConsoleKey.Escape; index--)
+                    {
+                        execution = Library.concArrToString(cmd, doIndex + 1, cmd.Length, true);
+                        Execution.execute_input(Interpreter.parse_input(execution, appdata_dir), desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager);
+                        if (Console.KeyAvailable)
+                            key_pressed = Console.ReadKey(true);
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("> for: Invalid number of arguments");
+                return (1);
+            }
+            return (0);
+        }
+
         static private int execute_exit(ref bool working)
         {
             working = false;
@@ -3663,14 +4825,10 @@ namespace cmd_Linux
         static private int execute_admin(ref bool superuser, string appdata_dir) //OK
         {
             if (!superuser)
-            {
-                Program.admin_connection_protocol(ref superuser, appdata_dir);
-            }
+                Security.admin_connection_protocol(ref superuser, appdata_dir);
             else
-            {
                 Console.WriteLine("> /admin: already logged as admin");
-            }
-            return (0);
+            return (superuser ? 0 : 1);
         }
 
         static private int execute_unadmin(ref bool superuser)
@@ -3685,24 +4843,31 @@ namespace cmd_Linux
             {
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("9gag"); Console.ResetColor(); Console.WriteLine(": loads a 9gag page in default browser.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("allocine"); Console.ResetColor(); Console.WriteLine(": loads an allocine page in default browser.");
+                Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("ascii"); Console.ResetColor(); Console.WriteLine(": gives ascii table information.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("bing"); Console.ResetColor(); Console.WriteLine(": loads a bing page or research in default browser.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("cat"); Console.ResetColor(); Console.WriteLine(": displays content of the file.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("cd"); Console.ResetColor(); Console.WriteLine(": travels to a directory.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("clear"); Console.ResetColor(); Console.WriteLine(": clears console.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("cp"); Console.ResetColor(); Console.WriteLine(": copies a file.");
-                Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("cpdir"); Console.ResetColor(); Console.WriteLine(": copies a folder");
+                Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("cpdir"); Console.ResetColor(); Console.WriteLine(": copies a folder.");
+                Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("crypto"); Console.ResetColor(); Console.WriteLine(": encrypts or decrypts a string or a file content.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("dailymotion"); Console.ResetColor(); Console.WriteLine(": loads a dailymotion page in default browser.");
+                Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("dice"); Console.ResetColor(); Console.WriteLine(": generates random number.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("echo"); Console.ResetColor(); Console.WriteLine(": rewrites arguments in cmd Linux.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("exit"); Console.ResetColor(); Console.WriteLine(": leaves cmd Linux.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("facebook"); Console.ResetColor(); Console.WriteLine(": loads a facebook page in default browser.");
-                Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("find"); Console.ResetColor(); Console.WriteLine(": displays all file or directory who match with arguments.");
+                Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("find"); Console.ResetColor(); Console.WriteLine(": executes commands a number of times.");
+                Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("for"); Console.ResetColor(); Console.WriteLine(": loads a gmail page in default browser.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("gmail"); Console.ResetColor(); Console.WriteLine(": loads a gmail page in default browser.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("google"); Console.ResetColor(); Console.WriteLine(": loads a google page or research in default browser.");
+                Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("hash"); Console.ResetColor(); Console.WriteLine(": creates a hash from a string or file content.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("home"); Console.ResetColor(); Console.WriteLine(": travels to the start folder.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("hostname"); Console.ResetColor(); Console.WriteLine(": gives the name of the computer.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("hotmail"); Console.ResetColor(); Console.WriteLine(": loads a hotmail page in default browser.");
+                Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("if"); Console.ResetColor(); Console.WriteLine(": executes commands if condition is true.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("info"); Console.ResetColor(); Console.WriteLine(": displays system informations.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("launch"); Console.ResetColor(); Console.WriteLine(": starts an application.");
+                Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("link"); Console.ResetColor(); Console.WriteLine(": creates an alias.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("lock"); Console.ResetColor(); Console.WriteLine(": locks cmd linux.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("lolapp"); Console.ResetColor(); Console.WriteLine(": executes LoLapp (Kelmatou apps).");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("ls"); Console.ResetColor(); Console.WriteLine(": displays content of the directory.");
@@ -3717,6 +4882,7 @@ namespace cmd_Linux
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("outlook"); Console.ResetColor(); Console.WriteLine(": loads an outlook page in default browser.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("password"); Console.ResetColor(); Console.WriteLine(": sets a new password [MASTER].");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("pwd"); Console.ResetColor(); Console.WriteLine(": displays current path.");
+                Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("reminder"); Console.ResetColor(); Console.WriteLine(": manages your reminders.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("rename"); Console.ResetColor(); Console.WriteLine(": renames a file or a directory.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("reset"); Console.ResetColor(); Console.WriteLine(": erases all data saved from cmd linux [MASTER].");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("resize"); Console.ResetColor(); Console.WriteLine(": resizes console.");
@@ -3733,6 +4899,7 @@ namespace cmd_Linux
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("time"); Console.ResetColor(); Console.WriteLine(": shows current time.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("touch"); Console.ResetColor(); Console.WriteLine(": creates the file if it doesn't exist.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("translate"); Console.ResetColor(); Console.WriteLine(": loads a google traduction page in default browser.");
+                Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("tree"); Console.ResetColor(); Console.WriteLine(": graphic view of directory's content.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("ts"); Console.ResetColor(); Console.WriteLine(": launches Team Speak.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("tv"); Console.ResetColor(); Console.WriteLine(": loads a tv program page in default browser.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("twitter"); Console.ResetColor(); Console.WriteLine(": loads a twitter page in default browser.");
@@ -3740,10 +4907,12 @@ namespace cmd_Linux
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("url"); Console.ResetColor(); Console.WriteLine(": loads an url in default browser.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("wait"); Console.ResetColor(); Console.WriteLine(": disables cmd Linux for a duration in seconds.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("weather"); Console.ResetColor(); Console.WriteLine(": loads a weather.com page in default browser.");
+                Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("while"); Console.ResetColor(); Console.WriteLine(": executes commands while condition is true.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("whoami"); Console.ResetColor(); Console.WriteLine(": gives the name of the user.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("wikipedia"); Console.ResetColor(); Console.WriteLine(": loads a wikipedia page or research in default browser.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("yahoo"); Console.ResetColor(); Console.WriteLine(": loads a yahoo page or research in default browser.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("youtube"); Console.ResetColor(); Console.WriteLine(": loads a youtube page or research in default browser.");
+                Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("zip"); Console.ResetColor(); Console.WriteLine(": compress or decompress a file.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("/admin"); Console.ResetColor(); Console.WriteLine(": logs you as MASTER.");
                 Console.Write("> "); Console.ForegroundColor = ConsoleColor.DarkCyan; Console.Write("/unadmin"); Console.ResetColor(); Console.WriteLine(": logs you out of MASTER.");
 
@@ -4006,6 +5175,50 @@ namespace cmd_Linux
                             Console.WriteLine("> tv: : loads a tv program page in default browser.");
                             Console.WriteLine("> Ex: tv");
                             break;
+                        case ("zip"):
+                            Console.WriteLine("> zip: : compress or decompress a file.");
+                            Console.WriteLine("> Ex: zip /mk test.txt test.zip");
+                            break;
+                        case ("ascii"):
+                            Console.WriteLine("> ascii: gives ascii table information.");
+                            Console.WriteLine("> Ex: ascii a A 97");
+                            break;
+                        case ("dice"):
+                            Console.WriteLine("> dice: generates random number.");
+                            Console.WriteLine("> Ex: dice x2 1/6");
+                            break;
+                        case ("link"):
+                            Console.WriteLine("> link: creates an alias.");
+                            Console.WriteLine("> Ex: link C:/ root_directory");
+                            break;
+                        case ("reminder"):
+                            Console.WriteLine("> reminder: manages your reminders.");
+                            Console.WriteLine("> Ex: reminder /mk \"big party\" tomorrow");
+                            break;
+                        case ("tree"):
+                            Console.WriteLine("> tree: graphic view of directory's content.");
+                            Console.WriteLine("> Ex: tree C:/");
+                            break;
+                        case ("hash"):
+                            Console.WriteLine("> hash: creates a hash from a string or file content.");
+                            Console.WriteLine("> Ex: hash \"cmd linux\" file.txt");
+                            break;
+                        case ("crypto"):
+                            Console.WriteLine("> crypto: encrypts or decrypts a string or a file content.");
+                            Console.WriteLine("> Ex: crypto file.txt password");
+                            break;
+                        case ("if"):
+                            Console.WriteLine("> if: executes commands if condition is true.");
+                            Console.WriteLine("> Ex: if /admin then echo connected else echo failure");
+                            break;
+                        case ("while"):
+                            Console.WriteLine("> while: executes commands while condition is true.");
+                            Console.WriteLine("> Ex: while !/admin do echo failure");
+                            break;
+                        case ("for"):
+                            Console.WriteLine("> for: executes commands a number of times.");
+                            Console.WriteLine("> Ex: for 1 to 10 do echo looping...");
+                            break;
                         case ("man"):
                             Console.WriteLine("> man: gives detailed information about commands.");
                             Console.WriteLine("> Ex: man man");
@@ -4017,9 +5230,7 @@ namespace cmd_Linux
                                 execute_script(new string[3] { "script", "/display", cmd[i] }, appdata_dir, ref arg, -1);
                             }
                             else
-                            {
-                                Console.WriteLine("> " + cmd[i] + ": Unknown command.");
-                            }
+                                Console.WriteLine("> " + cmd[i] + ": Unknown command");
                             break;
                             
                     }
@@ -4124,6 +5335,27 @@ namespace cmd_Linux
                             Console.ForegroundColor = ConsoleColor.DarkCyan;
                             Console.WriteLine("NOTES");
                             Console.ResetColor();
+                            break;
+                        case ("ascii"):
+                            print_n_space(Console.WindowWidth / 2 - 7);
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.WriteLine("> MAN ASCII <");
+                            Console.ResetColor();
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.Write("DESCRIPTION");
+                            Console.ResetColor();
+                            Console.WriteLine(": gives information about ascii table.");
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.Write("SYNTAX");
+                            Console.ResetColor();
+                            Console.WriteLine(": ascii [CHAR*, NUMBER*]");
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.WriteLine("NOTES");
+                            Console.ResetColor();
+                            Console.WriteLine(">       without arguments, displays all ascii table\n>       NUMBER argument must be between 0 and 255 (include)");
                             break;
                         case ("bing"):
                             print_n_space(Console.WindowWidth / 2 - 7);
@@ -4248,6 +5480,27 @@ namespace cmd_Linux
                             Console.ResetColor();
                             Console.WriteLine(">       first FOLDER argument is folder to copy\n>       second FOLDER is destination (default is current).\n>       prevent copying folder into itself.\n>       if directory or file of the same name exists, it will change its name.");
                             break;
+                        case ("crypto"):
+                            print_n_space(Console.WindowWidth / 2 - 7);
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.WriteLine("> MAN CRYPTO <");
+                            Console.ResetColor();
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.Write("DESCRIPTION");
+                            Console.ResetColor();
+                            Console.WriteLine(": encrypts or decrypts a string or a file.");
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.Write("SYNTAX");
+                            Console.ResetColor();
+                            Console.WriteLine(": crypto {CRYPTO_ARG} [STRING, FILE] [PASSWORD]");
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.WriteLine("NOTES");
+                            Console.ResetColor();
+                            Console.WriteLine(">       /encryt to encrypt a string or file.\n>       /decrypt to decrypt a string or a file.\n>       if a file is specified, it will be saved in a new file.");
+                            break;
                         case ("dailymotion"):
                             print_n_space(Console.WindowWidth / 2 - 10);
                             Console.ForegroundColor = ConsoleColor.DarkCyan;
@@ -4267,6 +5520,27 @@ namespace cmd_Linux
                             Console.ForegroundColor = ConsoleColor.DarkCyan;
                             Console.WriteLine("NOTES");
                             Console.ResetColor();
+                            break;
+                        case ("dice"):
+                            print_n_space(Console.WindowWidth / 2 - 6);
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.WriteLine("> MAN DICE <");
+                            Console.ResetColor();
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.Write("DESCRIPTION");
+                            Console.ResetColor();
+                            Console.WriteLine(": generates a random number.");
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.Write("SYNTAX");
+                            Console.ResetColor();
+                            Console.WriteLine(": dice [xNUMBER_THROW] [MINIMUM_VALUE/MAXIMUM_VALUE]");
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.WriteLine("NOTES");
+                            Console.ResetColor();
+                            Console.WriteLine(">       by default:\n>          NUMBER_THROW = 1\n>          MINIMUM_VALUE = 1\n>          MAXIMUM_VALUE = 6\n>       number of throws and boundaries can be given in any order,\n>       interpreter will only remember last values.\n>       MINIMUM_VALUE must be less or equal than MAXIMUM_VALUE.\n>       press ESCAPE to exit the command.");
                             break;
                         case ("echo"):
                             print_n_space(Console.WindowWidth / 2 - 7);
@@ -4350,6 +5624,27 @@ namespace cmd_Linux
                             Console.ResetColor();
                             Console.WriteLine(">       pressing ESCAPE key will cancel search.");
                             break;
+                        case ("for"):
+                            print_n_space(Console.WindowWidth / 2 - 6);
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.WriteLine("> MAN FOR <");
+                            Console.ResetColor();
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.Write("DESCRIPTION");
+                            Console.ResetColor();
+                            Console.WriteLine(": executes commands a number of times.");
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.Write("SYNTAX");
+                            Console.ResetColor();
+                            Console.WriteLine(": for [INIT to LIMIT] do [COMMANDS]");
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.WriteLine("NOTES");
+                            Console.ResetColor();
+                            Console.WriteLine(">       if INIT is less than LIMIT, then it will decrease INIT by 1 each time.\n>       if INIT is greater than LIMIT, then it will increase by 1 each time.\n>       for loop stops when INIT value reaches LIMIT value.\n>          example: for 1 to 2 will loop 1 time.\n>                   for 1 to 1 will loop 0 time.\n>       if INIT to LIMIT is not mentionned, it's an infinite loop.\n>       press ESCAPE to exit the loop.");
+                            break;
                         case ("gmail"):
                             print_n_space(Console.WindowWidth / 2 - 7);
                             Console.ForegroundColor = ConsoleColor.DarkCyan;
@@ -4389,6 +5684,27 @@ namespace cmd_Linux
                             Console.ForegroundColor = ConsoleColor.DarkCyan;
                             Console.WriteLine("NOTES");
                             Console.ResetColor();
+                            break;
+                        case ("hash"):
+                            print_n_space(Console.WindowWidth / 2 - 6);
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.WriteLine("> MAN HASH <");
+                            Console.ResetColor();
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.Write("DESCRIPTION");
+                            Console.ResetColor();
+                            Console.WriteLine(": creates a hash value from a string or a file content.");
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.Write("SYNTAX");
+                            Console.ResetColor();
+                            Console.WriteLine(": hash {STRING*;FILE*}");
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.WriteLine("NOTES");
+                            Console.ResetColor();
+                            Console.WriteLine(">       if argument is a file, it will create a new file, containing hash.");
                             break;
                         case ("help"):
                             print_n_space(Console.WindowWidth / 2 - 7);
@@ -4472,6 +5788,27 @@ namespace cmd_Linux
                             Console.WriteLine("NOTES");
                             Console.ResetColor();
                             break;
+                        case ("if"):
+                            print_n_space(Console.WindowWidth / 2 - 5);
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.WriteLine("> MAN IF <");
+                            Console.ResetColor();
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.Write("DESCRIPTION");
+                            Console.ResetColor();
+                            Console.WriteLine(": executes commands if condition is true.");
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.Write("SYNTAX");
+                            Console.ResetColor();
+                            Console.WriteLine(": if {[!] [EXPRESSION,COMMAND] [then] [COMMAND] [else] [COMMAND]}");
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.WriteLine("NOTES");
+                            Console.ResetColor();
+                            Console.WriteLine(">       ! symbol means negative result.\n>       EXPRESSION can be an arithmetical expression (3+3 = 6).\n>       if there is no condition, the result is true.\n>       if there is something different from an expression or command\n>          it will be false.");
+                            break;
                         case ("info"):
                             print_n_space(Console.WindowWidth / 2 - 7);
                             Console.ForegroundColor = ConsoleColor.DarkCyan;
@@ -4506,12 +5843,33 @@ namespace cmd_Linux
                             Console.ForegroundColor = ConsoleColor.DarkCyan;
                             Console.Write("SYNTAX");
                             Console.ResetColor();
-                            Console.WriteLine(": launch [FILE* ; FOLDER*]");
+                            Console.WriteLine(": launch [/planned DATE] [[FILE*; FOLDER*] [/with FILE]]");
                             Console.Write(">\n> ");
                             Console.ForegroundColor = ConsoleColor.DarkCyan;
                             Console.WriteLine("NOTES");
                             Console.ResetColor();
-                            Console.WriteLine(">       launch without argument starts a new cmd Linux window.\n>       launch a folder will open the graphic version in explorer.");
+                            Console.WriteLine(">       launch without argument starts a new cmd Linux window.\n>       /with FILE: launch arguments with FILE program.\n>       launch a folder will open the graphic version in explorer.\n>       /planned DATE: execute file or directory on DATE.\n>       /planned DATE must be second and third argument.\n>       DATE can be:\n>          now: current day, midnight.\n>          tomorrow: same time tomorrow.\n>          day of week: same time day of week.\n>          time: hh[:mm[:ss] same day.\n>          date: dd[/mm[/yyyy]] same time.");
+                            break;
+                        case ("link"):
+                            print_n_space(Console.WindowWidth / 2 - 6);
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.WriteLine("> MAN LINK <");
+                            Console.ResetColor();
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.Write("DESCRIPTION");
+                            Console.ResetColor();
+                            Console.WriteLine(": creates an alias.\n>              It can be reused by adding ~ before alias name.");
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.Write("SYNTAX");
+                            Console.ResetColor();
+                            Console.WriteLine(": link {[LINK_ARG] [KEYWORD [ALIAS_NAME]]}");
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.WriteLine("NOTES");
+                            Console.ResetColor();
+                            Console.WriteLine(">       if no LINK_ARG is mentioned, then it will create a quick link\n>       that can be used with '~' in command.\n>       if alias already exists, it will replace it.\n>       alias all disapear when application is closed.\n>       if link's target is a file/folder name, it will target this element.\n>       /mk to create a new link.\n>       /rm to remove a link.\n>       /display to show all links.");
                             break;
                         case ("lock"):
                             print_n_space(Console.WindowWidth / 2 - 7);
@@ -4553,7 +5911,7 @@ namespace cmd_Linux
                             Console.ForegroundColor = ConsoleColor.DarkCyan;
                             Console.WriteLine("NOTES");
                             Console.ResetColor();
-                            Console.WriteLine(">       first KEYWORD must be summoner name, second must be region.\n>       /champion: champion information.\n>       /game: current game information.\n>       /history: history of summoner.\n>       /profile: summoner profile.\n>       /team: summoner team.");
+                            Console.WriteLine(">       first KEYWORD must be summoner name, second must be region.\n>       /champion: champion information.\n>       /chat: connect to lol chat.\n>       /game: current game information.\n>       /history: history of summoner.\n>       /profile: summoner profile.\n>       /team: summoner team.");
                             break;
                         case ("ls"):
                             print_n_space(Console.WindowWidth / 2 - 6);
@@ -4574,7 +5932,7 @@ namespace cmd_Linux
                             Console.ForegroundColor = ConsoleColor.DarkCyan;
                             Console.WriteLine("NOTES");
                             Console.ResetColor();
-                            Console.WriteLine(">       FILE argument will only display file if it exists.");
+                            Console.WriteLine(">       FILE argument will only display file if it exists.\n>       if no argument, it will display current directory's content");
                             break;
                         case ("man"):
                             print_n_space(Console.WindowWidth / 2 - 6);
@@ -4801,6 +6159,27 @@ namespace cmd_Linux
                             Console.WriteLine("NOTES");
                             Console.ResetColor();
                             break;
+                        case ("reminder"):
+                            print_n_space(Console.WindowWidth / 2 - 8);
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.WriteLine("> MAN REMINDER <");
+                            Console.ResetColor();
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.Write("DESCRIPTION");
+                            Console.ResetColor();
+                            Console.WriteLine(": manages your reminders.");
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.Write("SYNTAX");
+                            Console.ResetColor();
+                            Console.WriteLine(": reminder {REMINDER_ARG [KEYWORD DATE, DATE [KEYWORD]]}");
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.WriteLine("NOTES");
+                            Console.ResetColor();
+                            Console.WriteLine(">       /add KEYWORD DATE to add a reminder.\n>       /rm DATE [KEYWORD] to remove reminders on DATE.\n>          if KEYWORD argument, then only removes KEYWORD on DATE.\n>       /display to display all your reminders.\n>        DATE can be:\n>          tomorrow: same time tomorrow.\n>          day of week: same time day of week.\n>          time: hh[:mm[:ss] same day.\n>          date: dd[/mm[/yyyy]] same time.");
+                            break;
                         case ("rename"):
                             print_n_space(Console.WindowWidth / 2 - 8);
                             Console.ForegroundColor = ConsoleColor.DarkCyan;
@@ -4841,7 +6220,7 @@ namespace cmd_Linux
                             Console.ForegroundColor = ConsoleColor.DarkCyan;
                             Console.WriteLine("NOTES");
                             Console.ResetColor();
-                            Console.WriteLine(">       without argument remove genius propositions and usage statistics.\n>       /genius: remove genius propositions of COMMAND argument.\n>          used without argument will reset all genius data.\n>       /stats: remove usage statistics.");
+                            Console.WriteLine(">       without argument remove genius propositions,\n>          usage statistics and options.\n>       /genius COMMANDS*: remove genius propositions of COMMAND argument.\n>          used without argument will reset all genius data.\n>       /stats: remove usage statistics.");
                             break;
                         case ("resize"):
                             print_n_space(Console.WindowWidth / 2 - 8);
@@ -5062,12 +6441,12 @@ namespace cmd_Linux
                             Console.ForegroundColor = ConsoleColor.DarkCyan;
                             Console.Write("SYNTAX");
                             Console.ResetColor();
-                            Console.WriteLine(": textedit [FILE]");
+                            Console.WriteLine(": textedit [LANGUAGE] [FILE]");
                             Console.Write(">\n> ");
                             Console.ForegroundColor = ConsoleColor.DarkCyan;
                             Console.WriteLine("NOTES");
                             Console.ResetColor();
-                            Console.WriteLine(">       create FILE argument if it doesn't exist.");
+                            Console.WriteLine(">       create FILE argument if it doesn't exist.\n>       CTRL+X to save and quit text edition.\n>       CTRL+Q to quit without saving.\n>       CTRL+W to save text.\n>       LANGUAGE available:\n>          /en\n>          /fr");
                             break;
                         case ("time"):
                             print_n_space(Console.WindowWidth / 2 - 7);
@@ -5131,6 +6510,27 @@ namespace cmd_Linux
                             Console.WriteLine("NOTES");
                             Console.ResetColor();
                             Console.WriteLine(">       default language is the previous one used on google traduction.\n>       first language argument is SOURCE, second is DESTINATION.");
+                            break;
+                        case ("tree"):
+                            print_n_space(Console.WindowWidth / 2 - 6);
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.WriteLine("> MAN TREE <");
+                            Console.ResetColor();
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.Write("DESCRIPTION");
+                            Console.ResetColor();
+                            Console.WriteLine(": graphic view of directory's content.");
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.Write("SYNTAX");
+                            Console.ResetColor();
+                            Console.WriteLine(": tree [FOLDER* ; FILE*]");
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.WriteLine("NOTES");
+                            Console.ResetColor();
+                            Console.WriteLine(">       FILE argument will only display file if it exists.\n>       if no argument, it will display current directory's content");
                             break;
                         case ("ts"):
                             print_n_space(Console.WindowWidth / 2 - 6);
@@ -5275,6 +6675,27 @@ namespace cmd_Linux
                             Console.WriteLine("NOTES");
                             Console.ResetColor();
                             break;
+                        case ("while"):
+                            print_n_space(Console.WindowWidth / 2 - 7);
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.WriteLine("> MAN WHILE <");
+                            Console.ResetColor();
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.Write("DESCRIPTION");
+                            Console.ResetColor();
+                            Console.WriteLine(": executes commands while condition is true.");
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.Write("SYNTAX");
+                            Console.ResetColor();
+                            Console.WriteLine(": while [EXPRESSION, COMMAND] do [COMMAND]");
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.WriteLine("NOTES");
+                            Console.ResetColor();
+                            Console.WriteLine(">       ! symbol means negative result.\n>       EXPRESSION can be an arithmetical expression (3+3 = 6).\n>       if there is no condition, the result is true.\n>       if there is something different from an expression or command\n>          it will be false.\n>       press ESCAPE to exit the loop");
+                            break;
                         case ("whoami"):
                             print_n_space(Console.WindowWidth / 2 - 8);
                             Console.ForegroundColor = ConsoleColor.DarkCyan;
@@ -5356,6 +6777,29 @@ namespace cmd_Linux
                             Console.WriteLine("NOTES");
                             Console.ResetColor();
                             break;
+                        case ("zip"):
+                            print_n_space(Console.WindowWidth / 2 - 6);
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.WriteLine("> MAN ZIP <");
+                            Console.ResetColor();
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.Write("DESCRIPTION");
+                            Console.ResetColor();
+                            Console.WriteLine(": compress or decompress a file.");
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.Write("SYNTAX");
+                            Console.ResetColor();
+                            Console.WriteLine(": zip {ZIP_PARAMETER} {FILE, FOLDER} [ZIP_NAME]");
+                            Console.Write(">\n> ");
+                            Console.ForegroundColor = ConsoleColor.DarkCyan;
+                            Console.WriteLine("NOTES");
+                            Console.ResetColor();
+                            //Console.WriteLine(">       /add to add a file or folder to a already existing zip");
+                            Console.WriteLine(">       /extract to decompress a zip");
+                            Console.WriteLine(">       /mk to create a zip with a file or folder");
+                            break;
                         default:
                             print_n_space(Console.WindowWidth / 2 - 8 - (cmd[i].Length / 2));
                             Console.WriteLine(cmd[i] + ": Unknown command");
@@ -5383,15 +6827,6 @@ namespace cmd_Linux
 
         //FONCTION TOOLS
 
-        static public void ShowApp(string app_path)
-        {
-            IntPtr h = Process.GetCurrentProcess().MainWindowHandle;
-            ShowWindow(h, 5);
-            SetForegroundWindow(h);
-            SetFocus(h);
-            System.Diagnostics.Debug.WriteLine(h);
-        }
-
         static public int f1_help_access(string appdata_dir, string argument = "")
         {
             Console.Clear();
@@ -5416,26 +6851,6 @@ namespace cmd_Linux
             }
             Console.Clear();
             return (0);
-        }
-
-        static public string extract_shorter_path(string full_path)
-        {
-            int i = full_path.Length - 1;
-
-            while(i >= 0 && full_path[i] != '\\' && full_path[i] != '/')
-            {
-                i--;
-            }
-
-            if(i < 0)
-            {
-                
-                return (full_path);
-            }
-            else
-            {
-                return (full_path.Substring(i + 1, full_path.Length - i - 1));
-            }
         }
 
         static public string extract_longer_path(string full_path)
@@ -5515,8 +6930,8 @@ namespace cmd_Linux
 
                 while (all_folders.Count > 0)
                 {
-                    Directory.CreateDirectory(target_directory + "/" + extract_shorter_path(all_folders[all_folders.Count - 1]));
-                    copy_all_folder_content(all_folders[all_folders.Count - 1], target_directory + "/" + extract_shorter_path(all_folders[all_folders.Count - 1]));
+                    Directory.CreateDirectory(target_directory + "/" + Library.extractShorterPath(all_folders[all_folders.Count - 1]));
+                    copy_all_folder_content(all_folders[all_folders.Count - 1], target_directory + "/" + Library.extractShorterPath(all_folders[all_folders.Count - 1]));
                     all_folders.Remove(all_folders[all_folders.Count - 1]);
                 }
             }
@@ -5543,33 +6958,30 @@ namespace cmd_Linux
         {
             int i = file.Length - 1;
 
-            while(i >= 0 && file[i] != '.')
-            {
+            while(i >= 0 && file[i] != '.' && file[i] != '/' && file[i] != '\\')
                 i--;
-            }
 
-            if(i < 0)
-            {
+            if (i < 0 || file[i] == '/' || file[i] == '\\')
                 return ("");
-            }
             else
-            {
                 return (file.Substring(i, file.Length - i));
-            }
         }
 
         static private string get_name_file(string file)
         {
             int i = file.Length - 1;
+            bool isNameZone = false;
             string name = "";
 
             while (i >= 0 && file[i] != '/' && file[i] != '\\')
             {
                 name = file[i] + name;
-                if(file[i] == '.')
+                if (file[i] == '.')
                 {
-                    name = "";
-                }
+                    if (!isNameZone)
+                        name = "";
+                    isNameZone = true;
+                }  
                 i--;
             }
 
@@ -5616,47 +7028,41 @@ namespace cmd_Linux
             return (null);
         }
 
-        static private void save_file_content(string file_name, List<string> content)
-        {
-            StreamWriter writer = new StreamWriter(file_name);
-
-            for (int i = 0; i < content.Count; i++)
-            {
-                writer.WriteLine(content[i]);
-            }
-
-            writer.Close();
-        }
-
         static private bool create_lolapp_script(string[] cmd, string appdata_dir)
         {
             StreamWriter writer = new StreamWriter(appdata_dir + "/script");
 
             switch(cmd[1])
             {
-                case ("/profile"):
+                case ("/chat"):
                     writer.WriteLine(2);
                     break;
-                case ("/champion"):
+                case ("/profile"):
                     writer.WriteLine(3);
                     break;
-                case ("/game"):
+                case ("/champion"):
                     writer.WriteLine(4);
                     break;
-                case ("/history"):
+                case ("/game"):
                     writer.WriteLine(5);
                     break;
-                case ("/team"):
+                case ("/history"):
                     writer.WriteLine(6);
+                    break;
+                case ("/team"):
+                    writer.WriteLine(7);
                     break;
                 default:
                     return (false);
             }
 
-            writer.WriteLine(cmd[2]);
-            if(cmd.Length == 4)
+            if(cmd.Length > 2)
             {
-                writer.WriteLine(cmd[3]);
+                writer.WriteLine(cmd[2]);
+                if (cmd.Length > 3)
+                {
+                    writer.WriteLine(cmd[3]);
+                }
             }
             
             writer.Close();
@@ -5688,56 +7094,36 @@ namespace cmd_Linux
         {
             int i;
             List<string> file_content = new List<string>();
-            string file_line;
 
-            if (cmd.Length > 0 && File.Exists(appdata_dir + "/genius_data/genius_data_" + cmd[0]))
+            if(cmd.Length > 0 && Static_data.has_genius_data_file(cmd[0]))
             {
-                StreamReader get_content = new StreamReader(appdata_dir + "/genius_data/genius_data_" + cmd[0]);
-                file_line = get_content.ReadLine();
-
-                while (file_line != null)
-                {
-                    file_content.Add(file_line);
-                    file_line = get_content.ReadLine();
-                }
-
-                get_content.Close();
+                if(!File.Exists(appdata_dir + "/genius_data/genius_data_" + cmd[0]))
+                    Library.createFile(appdata_dir + "/genius_data/genius_data_" + cmd[0]);
+                else
+                    file_content = Library.getFileContent(appdata_dir + "/genius_data/genius_data_" + cmd[0]);
 
                 for (int j = 1; j < cmd.Length; j++)
                 {
-                    if(cmd[j].Length > 1 && cmd[j][0] != '/')
+                    if (cmd[j].Length > 1 && cmd[j][0] != '/')
                     {
                         i = 0;
                         while (i < file_content.Count && file_content[i] != cmd[j])
-                        {
                             i++;
-                        }
                         all_genius_data.Insert(0, new Genius_data(cmd[0], cmd[j]));
                         if (i < file_content.Count)
-                        {
                             file_content.Remove(cmd[j]);
-                        }
                         file_content.Insert(0, cmd[j]); //on rajoute la data au début (plus rapidement suggérée)
                     }
                 }
 
-                StreamWriter updater = new StreamWriter(appdata_dir + "/genius_data/genius_data_" + cmd[0]);
-
-                for (i = 0; i < file_content.Count && i < max_genius_data; i++)
-                {
-                    updater.WriteLine(file_content[i]);
-                }
-
-                updater.Close();
+                Library.saveFile(appdata_dir + "/genius_data/genius_data_" + cmd[0], file_content);
             }
         }
 
         static public void print_n_space(int n)
         {
             for(int i = 0; i < n; i++)
-            {
                 Console.Write(" ");
-            }
         }
 
         static public int max_length_list(List<string> list)
@@ -6423,7 +7809,7 @@ namespace cmd_Linux
             }
         }
 
-        static private void print_option_menu(int first_line_position, int current_line, bool script_enable, int refresh_timer, bool auto_lock, bool genius_enable, bool private_mode, bool auto_log, bool cmd_print_user, bool cmd_print_path, bool cmd_print_time, int max_genius_data)
+        static private void print_option_menu(int first_line_position, int current_line, bool script_enable, int refresh_timer, bool auto_lock, bool genius_enable, bool private_mode, bool auto_log, bool cmd_print_user, bool cmd_print_path, bool cmd_print_time, int max_genius_data, string language)
         {
             Console.SetCursorPosition(0, first_line_position + current_line - 1);
             print_n_space(Console.WindowWidth - 1);
@@ -6431,87 +7817,97 @@ namespace cmd_Linux
             if (current_line == 1)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine("> UPDATE:            " + refresh_timer + "ms");
+                Console.WriteLine("> UPDATE:              " + refresh_timer + "ms");
                 Console.ResetColor();
             }
             else
             {
-                Console.WriteLine("> UPDATE:            " + refresh_timer + "ms");
+                Console.WriteLine("> UPDATE:              " + refresh_timer + "ms");
             }
             if (current_line == 2)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine("> PRINT USER:        " + cmd_print_user);
+                Console.WriteLine("> PRINT USER:          " + cmd_print_user);
                 Console.ResetColor();
             }
             else
             {
-                Console.WriteLine("> PRINT USER:        " + cmd_print_user);
+                Console.WriteLine("> PRINT USER:          " + cmd_print_user);
             }
             if (current_line == 3)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine("> PRINT DIRECTORY:   " + cmd_print_path);
+                Console.WriteLine("> PRINT DIRECTORY:     " + cmd_print_path);
                 Console.ResetColor();
             }
             else
             {
-                Console.WriteLine("> PRINT DIRECTORY:   " + cmd_print_path);
+                Console.WriteLine("> PRINT DIRECTORY:     " + cmd_print_path);
             }
             if (current_line == 4)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine("> PRINT TIME:        " + cmd_print_time);
+                Console.WriteLine("> PRINT TIME:          " + cmd_print_time);
                 Console.ResetColor();
             }
             else
             {
-                Console.WriteLine("> PRINT TIME:        " + cmd_print_time);
+                Console.WriteLine("> PRINT TIME:          " + cmd_print_time);
             }
-            if(current_line == 5)
+            if (current_line == 5)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine("> SCRIPT ENABLE:     " + script_enable);
+                Console.WriteLine("> TEXTEDIT LANGUAGE:   " + getLanguageName(language));
                 Console.ResetColor();
             }
             else
             {
-                Console.WriteLine("> SCRIPT ENABLE:     " + script_enable);
+                Console.WriteLine("> TEXTEDIT LANGUAGE:   " + getLanguageName(language));
             }
-            if (current_line == 6)
+            if(current_line == 6)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine("> AUTO LOCK:         " + auto_lock);
+                Console.WriteLine("> SCRIPT ENABLE:       " + script_enable);
                 Console.ResetColor();
             }
             else
             {
-                Console.WriteLine("> AUTO LOCK:         " + auto_lock);
+                Console.WriteLine("> SCRIPT ENABLE:       " + script_enable);
             }
             if (current_line == 7)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine("> AUTO LOG:          " + auto_log);
+                Console.WriteLine("> AUTO LOCK:           " + auto_lock);
                 Console.ResetColor();
             }
             else
             {
-                Console.WriteLine("> AUTO LOG:          " + auto_log);
+                Console.WriteLine("> AUTO LOCK:           " + auto_lock);
             }
             if (current_line == 8)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine("> GENIUS ENABLE:     " + genius_enable);
+                Console.WriteLine("> AUTO LOG:            " + auto_log);
                 Console.ResetColor();
             }
             else
             {
-                Console.WriteLine("> GENIUS ENABLE:     " + genius_enable);
+                Console.WriteLine("> AUTO LOG:            " + auto_log);
             }
             if (current_line == 9)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.Write("> MAX GENIUS DATA:   ");
+                Console.WriteLine("> GENIUS ENABLE:       " + genius_enable);
+                Console.ResetColor();
+            }
+            else
+            {
+                Console.WriteLine("> GENIUS ENABLE:       " + genius_enable);
+            }
+            if (current_line == 10)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.Write("> MAX GENIUS DATA:     ");
                 if(max_genius_data == 10000)
                 {
                     Console.WriteLine("Unlimited");
@@ -6524,7 +7920,7 @@ namespace cmd_Linux
             }
             else
             {
-                Console.Write("> MAX GENIUS DATA:   ");
+                Console.Write("> MAX GENIUS DATA:     ");
                 if (max_genius_data == 10000)
                 {
                     Console.WriteLine("Unlimited");
@@ -6534,17 +7930,17 @@ namespace cmd_Linux
                     Console.WriteLine(max_genius_data);
                 }
             }
-            if (current_line == 10)
+            if (current_line == 11)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine("> PRIVATE MODE:      " + private_mode);
+                Console.WriteLine("> PRIVATE MODE:        " + private_mode);
                 Console.ResetColor();
             }
             else
             {
-                Console.WriteLine("> PRIVATE MODE:      " + private_mode);
+                Console.WriteLine("> PRIVATE MODE:        " + private_mode);
             }
-            if (current_line == 11)
+            if (current_line == 12)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
                 Console.WriteLine("> EXIT");
@@ -6559,7 +7955,7 @@ namespace cmd_Linux
         static private void erase_option_menu(int first_line_position)
         {
             Console.SetCursorPosition(0, first_line_position);
-            for(int i = 0; i < 11; i++)
+            for(int i = 0; i < 12; i++)
             {
                 print_n_space(Console.WindowWidth - 1);
                 Console.WriteLine();
@@ -6567,38 +7963,28 @@ namespace cmd_Linux
             Console.SetCursorPosition(0, first_line_position);
         }
 
-        static private void apply_option_menu_action(ConsoleKeyInfo action, ref int current_line, ref bool script_enable, ref int refresh_timer, ref bool auto_lock, ref bool genius_enable, ref bool private_mode, ref bool running, ref bool auto_log, ref bool cmd_print_user, ref bool cmd_print_path, ref bool cmd_print_time, ref int max_genius_data)
+        static private void apply_option_menu_action(ConsoleKeyInfo action, ref int current_line, ref bool script_enable, ref int refresh_timer, ref bool auto_lock, ref bool genius_enable, ref bool private_mode, ref bool running, ref bool auto_log, ref bool cmd_print_user, ref bool cmd_print_path, ref bool cmd_print_time, ref int max_genius_data, ref string language)
         {
             switch(action.Key)
             {
                 case (ConsoleKey.UpArrow):
                     if(current_line == 1)
-                    {
-                        current_line = 11;
-                    }
+                        current_line = 12;
                     else
-                    {
                         current_line--;
-                    }
                     break;
                 case (ConsoleKey.DownArrow):
-                    if (current_line == 11)
-                    {
+                    if (current_line == 12)
                         current_line = 1;
-                    }
                     else
-                    {
                         current_line++;
-                    }
                     break;
                 case (ConsoleKey.LeftArrow):
                     switch(current_line)
                     {
                         case (1):
                             if(refresh_timer >= 5)
-                            {
                                 refresh_timer -= 5;
-                            }
                             break;
                         case (2):
                             cmd_print_user = !cmd_print_user;
@@ -6610,32 +7996,34 @@ namespace cmd_Linux
                             cmd_print_time = !cmd_print_time;
                             break;
                         case (5):
-                            script_enable = !script_enable;
+                            if (language == "en")
+                                language = "fr";
+                            else if (language == "fr")
+                                language = "en";
                             break;
                         case (6):
-                            auto_lock = !auto_lock;
+                            script_enable = !script_enable;
                             break;
                         case (7):
-                            auto_log = !auto_log;
+                            auto_lock = !auto_lock;
                             break;
                         case (8):
-                            genius_enable = !genius_enable;
+                            auto_log = !auto_log;
                             break;
                         case (9):
+                            genius_enable = !genius_enable;
+                            break;
+                        case (10):
                             if(max_genius_data == 10000)
-                            {
                                 max_genius_data = 100;
-                            }
                             else
                             {
                                 max_genius_data -= 5;
                                 if(max_genius_data == 0)
-                                {
                                     max_genius_data = 10000;
-                                }
                             }
                             break;
-                        case (10):
+                        case (11):
                             private_mode = !private_mode;
                             break;
                     }
@@ -6645,9 +8033,7 @@ namespace cmd_Linux
                     {
                         case (1):
                             if(refresh_timer <= 2147483642)
-                            {
                                 refresh_timer += 5;
-                            }
                             break;
                         case (2):
                             cmd_print_user = !cmd_print_user;
@@ -6659,56 +8045,52 @@ namespace cmd_Linux
                             cmd_print_time = !cmd_print_time;
                             break;
                         case (5):
-                            script_enable = !script_enable;
+                            if (language == "en")
+                                language = "fr";
+                            else if (language == "fr")
+                                language = "en";
                             break;
                         case (6):
-                            auto_lock = !auto_lock;
+                            script_enable = !script_enable;
                             break;
                         case (7):
-                            auto_log = !auto_log;
+                            auto_lock = !auto_lock;
                             break;
                         case (8):
-                            genius_enable = !genius_enable;
+                            auto_log = !auto_log;
                             break;
                         case (9):
+                            genius_enable = !genius_enable;
+                            break;
+                        case (10):
                             if (max_genius_data == 100)
-                            {
                                 max_genius_data = 10000;
-                            }
                             else
                             {
                                 if(max_genius_data == 10000)
-                                {
                                     max_genius_data = 0;
-                                }
                                 max_genius_data += 5;
                             }
                             break;
-                        case (10):
+                        case (11):
                             private_mode = !private_mode;
                             break;
                     }
                     break;
                 case (ConsoleKey.Escape):
-                    if(current_line == 11)
-                    {
+                    if(current_line == 12)
                         running = false;
-                    }
                     else
-                    {
-                        current_line = 11;
-                    }
+                        current_line = 12;
                     break;
                 case (ConsoleKey.Enter):
-                    if(current_line == 11)
-                    {
+                    if(current_line == 12)
                         running = false;
-                    }
                     break;
             }
         }
 
-        static private void save_option(bool script_enable, int refresh_timer, bool auto_lock, bool genius_enable, bool private_mode, bool auto_log, bool cmd_print_user, bool cmd_print_path, bool cmd_print_time, int max_genius_data, string appdata_dir)
+        static private void save_option(bool script_enable, int refresh_timer, bool auto_lock, bool genius_enable, bool private_mode, bool auto_log, bool cmd_print_user, bool cmd_print_path, bool cmd_print_time, int max_genius_data, string language, string appdata_dir)
         {
             try
             {
@@ -6717,6 +8099,7 @@ namespace cmd_Linux
                 saver.WriteLine("PRINT USER: " + cmd_print_user);
                 saver.WriteLine("PRINT DIRECTORY: " + cmd_print_path);
                 saver.WriteLine("PRINT TIME: " + cmd_print_time);
+                saver.WriteLine("TEXTEDIT LANGUAGE: " + language);
                 saver.WriteLine("SCRIPT ENABLE: " + script_enable);
                 saver.WriteLine("AUTO LOCK: " + auto_lock);
                 saver.WriteLine("AUTO LOG: " + auto_log);
@@ -6732,6 +8115,19 @@ namespace cmd_Linux
             }
         }
 
+        static public string getLanguageName(string language)
+        {
+            switch(language)
+            {
+                case("en"):
+                    return ("English");
+                case("fr"):
+                    return ("French");
+                default:
+                    return ("Unknown");
+            }
+        }
+        
         static private bool search_file_or_folder(string[] cmd, ref List<List<string>> results, string searching_directory, ref bool cancel, ref bool first_found)
         {
             List<string> all_folders = new List<string>();
@@ -6932,10 +8328,8 @@ namespace cmd_Linux
             Console.ForegroundColor = ConsoleColor.DarkCyan;
             Console.WriteLine(" M  T  W  T  F  S  S");
 
-            for(int i = get_day_number(day); i > 0; i--)
-            {
+            for(int i = Library.get_day_number(day); i > 0; i--)
                 day = day.AddDays(-1);
-            }
 
             for (int i = 0; i < nbr_week; i++)
             {
@@ -6945,27 +8339,17 @@ namespace cmd_Linux
                 {
                     Console.ResetColor();
                     if (i == 0 && day.Day == DateTime.Now.Day)
-                    {
                         Console.ForegroundColor = ConsoleColor.DarkYellow;
-                    }
 
                     if (day.Day < 10)
-                    {
                         Console.Write(" " + day.Day + " ");
-                    }
                     else
-                    {
                         Console.Write(day.Day + " ");
-                    }
 
                     if(day.Year < 9999 || day.Month < 12 || day.Day < 31)
-                    {
                         day = day.AddDays(1);
-                    }
                     else
-                    {
                         nbr_week = 0;
-                    }
                 }
 
                 if(nbr_week > 0)
@@ -6985,29 +8369,6 @@ namespace cmd_Linux
                 }
                 Console.WriteLine();
             }    
-        }
-
-        static private int get_day_number(DateTime date)
-        {
-            switch(date.DayOfWeek)
-            {
-                case(DayOfWeek.Monday):
-                    return (0);
-                case (DayOfWeek.Tuesday):
-                    return (1);
-                case (DayOfWeek.Wednesday):
-                    return (2);
-                case (DayOfWeek.Thursday):
-                    return (3);
-                case (DayOfWeek.Friday):
-                    return (4);
-                case (DayOfWeek.Saturday):
-                    return (5);
-                case (DayOfWeek.Sunday):
-                    return (6);
-                default:
-                    return (0);
-            }
         }
 
         static private string get_month_name(int mounth)
@@ -7161,6 +8522,183 @@ namespace cmd_Linux
             }
 
             return (result);
+        }
+
+        static private int getTextIndex(string allText, string textSearched, int fastStart = 0)
+        {
+            int index = fastStart;
+            if(allText.Length >= textSearched.Length)
+            {
+                while(index + textSearched.Length <= allText.Length && allText.Substring(index, textSearched.Length) != textSearched)
+                {
+                    index++;
+                }
+                if (index + textSearched.Length > allText.Length)
+                    return (-1);
+            }
+            else
+            {
+                return (-1);
+            }
+            return (index);
+        }
+
+        static private string getNumberOnNChar(int number, int n)
+        {
+            string result = "";
+
+            if (n >= number.ToString().Length)
+            {
+                n = n - number.ToString().Length;
+                for (int i = 0; i < n; i++)
+                    result += " ";
+                result += number.ToString();
+            }
+
+            return (result);
+        }
+
+        static private string getCharValue(int nbr)
+        {
+            switch(nbr)
+            {
+                case (0):
+                    return ("NULL");
+                case (1):
+                    return ("SOH");
+                case (2):
+                    return ("STX");
+                case (3):
+                    return ("ETX");
+                case (4):
+                    return ("EOT");
+                case (5):
+                    return ("ENQ");
+                case (6):
+                    return ("ACK");
+                case (7):
+                    return ("BEL");
+                case (8):
+                    return ("BS");
+                case (9):
+                    return ("TAB");
+                case (10):
+                    return ("LF");
+                case (11):
+                    return ("VT");
+                case (12):
+                    return ("FF");
+                case (13):
+                    return ("CR");
+                case (14):
+                    return ("SO");
+                case (15):
+                    return ("SI");
+                case (16):
+                    return ("DLE");
+                case (17):
+                    return ("DC1");
+                case (18):
+                    return ("DC2");
+                case (19):
+                    return ("DC3");
+                case (20):
+                    return ("DC4");
+                case (21):
+                    return ("NAK");
+                case (22):
+                    return ("SYN");
+                case (23):
+                    return ("ETB");
+                case (24):
+                    return ("CAN");
+                case (25):
+                    return ("EM");
+                case (26):
+                    return ("SUB");
+                case (27):
+                    return ("ESC");
+                case (28):
+                    return ("FS");
+                case (29):
+                    return ("GS");
+                case (30):
+                    return ("RS");
+                case (31):
+                    return ("US");
+                case (127):
+                    return ("DEL");
+                default:
+                    return (Convert.ToChar(nbr) + "");
+            }
+        }
+
+        static private void display_tree(string curDirectory, int depth)
+        {
+            try
+            {
+                List<string> allDirectories = Library.getAllDirectories(curDirectory);
+                List<string> allFiles = Library.getAllFiles(curDirectory);
+                for (int i = 0; i < allDirectories.Count; i++)
+                {
+                    printDepth(depth);
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    Console.WriteLine(Library.extractShorterPath(allDirectories[i]) + "/");
+                    Console.ResetColor();
+                    display_tree(allDirectories[i], depth + 1);
+                }
+                for (int i = 0; i < allFiles.Count; i++)
+                {
+                    printDepth(depth);
+                    Console.WriteLine(Library.extractShorterPath(allFiles[i]));
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        static private void printDepth(int depth)
+        {
+            Console.Write("> ");
+            for (int i = 0; i < depth; i++)
+                Console.Write("|   ");
+            Console.Write("|___");
+        }
+
+        static private bool evaluateExpression(string expression, string desktop_dir, string appdata_dir, ref bool working, ref bool superuser, ref long last_result, ref List<Genius_data> genius_data, ref bool script_enable, ref bool genius_enable, ref bool private_mode, ref int refresh_timer, ref bool auto_lock, ref bool auto_log, ref bool cmd_print_user, ref bool cmd_print_path, ref bool cmd_print_time, ref string[] previous_directory, ref int previous_directory_pointer, ref int max_genius_data, ref string language, ref List<Link> allLinks, ref NotificationManager notificationManager)
+        {
+            bool negative = (expression.Length > 0 && expression[0] == '!');
+            if (negative)
+                expression = expression.Substring(1);
+            while (expression.Length > 0 && expression[0] == ' ')
+                expression = expression.Substring(1);
+
+            if (expression == "" || expression == "true")
+                return (!negative);
+            else if (expression.Contains('='))
+            {
+                expression = Library.removeAllChar(expression, ' ');
+                string[] parsedExpression = expression.Split('=');
+                if(parsedExpression.Length == 2)
+                {
+                    long result1 = 0;
+                    long result2 = 0;
+                    if (Calculator.is_math_expression(new string[1] { parsedExpression[0]}) && Calculator.is_math_expression(new string[1] { parsedExpression[1]}))
+                    {
+                        if (Calculator.get_result(new string[1] { parsedExpression[0] }, ref result1) == 0 && Calculator.get_result(new string[1] { parsedExpression[1] }, ref result2) == 0)
+                        {
+                            parsedExpression[0] = "" + result1;
+                            parsedExpression[1] = "" + result2;
+                        }
+                    }
+                    return (negative ? parsedExpression[0] != parsedExpression[1] : parsedExpression[0] == parsedExpression[1]);
+                }
+            }
+            else if (expression.Split(' ').Length > 0 && Static_data.is_original_cmd(expression.Split(' ')[0]))
+                return (Execution.execute_input(Interpreter.parse_input(expression, appdata_dir), desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager) == (negative ? 1 : 0));
+            
+            return (negative);
         }
     }
 }

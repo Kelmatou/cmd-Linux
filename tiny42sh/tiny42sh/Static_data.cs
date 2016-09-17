@@ -13,7 +13,7 @@ namespace cmd_Linux
 
         public static List<string> cmd_linux_commands()
         {
-            return (new List<string>() { "/admin;", "/unadmin;", "9gag;", "allocine;", "bing", "breakout", "cat", "cd", "clear;", "cp", "cpdir", "dailymotion;", "echo", "exit;", "facebook", "find", "gmail;", "google", "help", "home;", "hostname;", "hotmail;", "info;", "launch", "lock", "lolapp", "ls", "man", "map", "mkdir", "mv", "mvdir", "network", "news", "option;", "outlook;", "password;", "pwd;", "rename", "reset", "resize", "rm", "rmdir", "script", "seed;", "shutdown", "skype;", "sl", "taskkill", "tasklist;", "textedit", "time", "touch", "translate", "ts;", "tv;", "twitter", "uninstall;", "url", "wait", "weather;", "whoami;", "wikipedia", "yahoo", "youtube" });
+            return (new List<string>() { "/admin;", "/unadmin;", "9gag;", "allocine;", "ascii", "bing"/*, "breakout"*/, "cat", "cd", "clear;", "cp", "cpdir", "crypto", "dailymotion;", "dice", "echo", "exit;", "facebook", "find", "for", "gmail;", "google", "hash", "help", "home;", "hostname;", "hotmail;", "if", "info;", "launch", "link", "lock", "lolapp", "ls", "man", "map", "mkdir", "mv", "mvdir", "network", "news", "option;", "outlook;", "password;", "pwd;", "reminder", "rename", "reset", "resize", "rm", "rmdir", "script", "seed;", "shutdown", "skype;", "sl", "taskkill", "tasklist;", "textedit", "time", "touch", "translate", "tree", "ts;", "tv;", "twitter", "uninstall;", "url", "wait", "weather;", "while", "whoami;", "wikipedia", "yahoo", "youtube", "zip" });
         }
 
         //DATA FUNCTION
@@ -21,6 +21,11 @@ namespace cmd_Linux
         public static bool is_known_cmd(string cmd, string appdata_dir)
         {
             return (Interpreter.is_keyword(cmd) != Interpreter.Keyword.None || Interpreter.is_keyword(cmd + ";") != Interpreter.Keyword.None  || File.Exists(appdata_dir + "/script_files/" + cmd));
+        }
+
+        public static bool has_genius_data_file(string cmd) 
+        {
+            return (cmd == "ascii" || cmd == "bing" || cmd == "cat" || cmd == "cd" || cmd == "cp" || cmd == "cpdir" || cmd == "dice" || cmd == "echo" || cmd == "facebook" || cmd == "find" || cmd == "for" || cmd == "google" || cmd == "hash" || cmd == "if" || cmd == "launch" || cmd == "link" || cmd == "lolapp" || cmd == "ls" || cmd == "map" || cmd == "mkdir" || cmd == "mv" || cmd == "mvdir" || cmd == "news" || cmd == "reminder" || cmd == "rename" || cmd == "rm" || cmd == "rmdir" || cmd == "textedit" || cmd == "time" || cmd == "touch" || cmd == "translate" || cmd == "tree" || cmd == "twitter" || cmd == "url" || cmd == "wait" || cmd == "while" || cmd == "wikipedia" || cmd == "yahoo" || cmd == "youtube" || cmd == "zip");
         }
 
         public static bool is_original_cmd(string cmd)
@@ -44,12 +49,15 @@ namespace cmd_Linux
                 case ("allocine"):
                     all_cmd_usage[3] = usage;
                     break;
-                case ("bing"):
+                case ("ascii"):
                     all_cmd_usage[4] = usage;
                     break;
-                case ("breakout"):
+                case ("bing"):
                     all_cmd_usage[5] = usage;
                     break;
+                /*case ("breakout"):
+                    all_cmd_usage[5] = usage;
+                    break;*/
                 case ("cat"):
                     all_cmd_usage[6] = usage;
                     break;
@@ -65,167 +73,197 @@ namespace cmd_Linux
                 case ("cpdir"):
                     all_cmd_usage[10] = usage;
                     break;
-                case ("dailymotion"):
+                case ("crypto"):
                     all_cmd_usage[11] = usage;
                     break;
-                case ("echo"):
+                case ("dailymotion"):
                     all_cmd_usage[12] = usage;
                     break;
-                case ("exit"):
+                case ("dice"):
                     all_cmd_usage[13] = usage;
                     break;
-                case ("facebook"):
+                case ("echo"):
                     all_cmd_usage[14] = usage;
                     break;
-                case("find"):
+                case ("exit"):
                     all_cmd_usage[15] = usage;
                     break;
-                case ("gmail"):
+                case ("facebook"):
                     all_cmd_usage[16] = usage;
                     break;
-                case ("google"):
+                case("find"):
                     all_cmd_usage[17] = usage;
                     break;
-                case ("help"):
+                case ("for"):
                     all_cmd_usage[18] = usage;
                     break;
-                case ("home"):
+                case ("gmail"):
                     all_cmd_usage[19] = usage;
                     break;
-                case ("hostname"):
+                case ("google"):
                     all_cmd_usage[20] = usage;
                     break;
-                case ("hotmail"):
+                case ("hash"):
                     all_cmd_usage[21] = usage;
                     break;
-                case ("info"):
+                case ("help"):
                     all_cmd_usage[22] = usage;
                     break;
-                case ("launch"):
+                case ("home"):
                     all_cmd_usage[23] = usage;
                     break;
-                case ("lock"):
+                case ("hostname"):
                     all_cmd_usage[24] = usage;
                     break;
-                case ("lolapp"):
+                case ("hotmail"):
                     all_cmd_usage[25] = usage;
                     break;
-                case ("ls"):
+                case ("if"):
                     all_cmd_usage[26] = usage;
                     break;
-                case ("man"):
+                case ("info"):
                     all_cmd_usage[27] = usage;
                     break;
-                case ("map"):
+                case ("launch"):
                     all_cmd_usage[28] = usage;
                     break;
-                case ("mkdir"):
+                case ("link"):
                     all_cmd_usage[29] = usage;
                     break;
-                case ("mv"):
+                case ("lock"):
                     all_cmd_usage[30] = usage;
                     break;
-                case ("mvdir"):
+                case ("lolapp"):
                     all_cmd_usage[31] = usage;
                     break;
-                case ("network"):
+                case ("ls"):
                     all_cmd_usage[32] = usage;
                     break;
-                case ("news"):
+                case ("man"):
                     all_cmd_usage[33] = usage;
                     break;
-                case ("option"):
+                case ("map"):
                     all_cmd_usage[34] = usage;
                     break;
-                case ("outlook"):
+                case ("mkdir"):
                     all_cmd_usage[35] = usage;
                     break;
-                case ("password"):
+                case ("mv"):
                     all_cmd_usage[36] = usage;
                     break;
-                case ("pwd"):
+                case ("mvdir"):
                     all_cmd_usage[37] = usage;
                     break;
-                case ("rename"):
+                case ("network"):
                     all_cmd_usage[38] = usage;
                     break;
-                case ("reset"):
+                case ("news"):
                     all_cmd_usage[39] = usage;
                     break;
-                case ("resize"):
+                case ("option"):
                     all_cmd_usage[40] = usage;
                     break;
-                case ("rm"):
+                case ("outlook"):
                     all_cmd_usage[41] = usage;
                     break;
-                case ("rmdir"):
+                case ("password"):
                     all_cmd_usage[42] = usage;
                     break;
-                case ("script"):
+                case ("pwd"):
                     all_cmd_usage[43] = usage;
                     break;
-                case ("seed"):
+                case ("reminder"):
                     all_cmd_usage[44] = usage;
                     break;
-                case ("shutdown"):
+                case ("rename"):
                     all_cmd_usage[45] = usage;
                     break;
-                case ("skype"):
+                case ("reset"):
                     all_cmd_usage[46] = usage;
                     break;
-                case ("sl"):
+                case ("resize"):
                     all_cmd_usage[47] = usage;
                     break;
-                case ("taskkill"):
+                case ("rm"):
                     all_cmd_usage[48] = usage;
                     break;
-                case ("tasklist"):
+                case ("rmdir"):
                     all_cmd_usage[49] = usage;
                     break;
-                case ("textedit"):
+                case ("script"):
                     all_cmd_usage[50] = usage;
                     break;
-                case ("time"):
+                case ("seed"):
                     all_cmd_usage[51] = usage;
                     break;
-                case ("touch"):
+                case ("shutdown"):
                     all_cmd_usage[52] = usage;
                     break;
-                case ("translate"):
+                case ("skype"):
                     all_cmd_usage[53] = usage;
                     break;
-                case ("ts"):
+                case ("sl"):
                     all_cmd_usage[54] = usage;
                     break;
-                case ("tv"):
+                case ("taskkill"):
                     all_cmd_usage[55] = usage;
                     break;
-                case ("twitter"):
+                case ("tasklist"):
                     all_cmd_usage[56] = usage;
                     break;
-                case ("uninstall"):
+                case ("textedit"):
                     all_cmd_usage[57] = usage;
                     break;
-                case ("url"):
+                case ("time"):
                     all_cmd_usage[58] = usage;
                     break;
-                case ("wait"):
+                case ("touch"):
                     all_cmd_usage[59] = usage;
                     break;
-                case ("weather"):
+                case ("translate"):
                     all_cmd_usage[60] = usage;
                     break;
-                case ("whoami"):
+                case ("tree"):
                     all_cmd_usage[61] = usage;
                     break;
-                case ("wikipedia"):
+                case ("ts"):
                     all_cmd_usage[62] = usage;
                     break;
-                case ("yahoo"):
+                case ("tv"):
                     all_cmd_usage[63] = usage;
                     break;
-                case ("youtube"):
+                case ("twitter"):
                     all_cmd_usage[64] = usage;
+                    break;
+                case ("uninstall"):
+                    all_cmd_usage[65] = usage;
+                    break;
+                case ("url"):
+                    all_cmd_usage[66] = usage;
+                    break;
+                case ("wait"):
+                    all_cmd_usage[67] = usage;
+                    break;
+                case ("weather"):
+                    all_cmd_usage[68] = usage;
+                    break;
+                case ("while"):
+                    all_cmd_usage[69] = usage;
+                    break;
+                case ("whoami"):
+                    all_cmd_usage[70] = usage;
+                    break;
+                case ("wikipedia"):
+                    all_cmd_usage[71] = usage;
+                    break;
+                case ("yahoo"):
+                    all_cmd_usage[72] = usage;
+                    break;
+                case ("youtube"):
+                    all_cmd_usage[73] = usage;
+                    break;
+                case ("zip"):
+                    all_cmd_usage[74] = usage;
                     break;
                 default:
                     return (false);

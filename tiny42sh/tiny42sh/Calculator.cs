@@ -16,24 +16,18 @@ namespace cmd_Linux
             int j;
 
             for (i = 0; i < cmd.Length; i++)
-            {
                 new_expression = new_expression + cmd[i];
-            }
 
+            new_expression = addImplicitOperator(new_expression);
             if (next_operation_to_do(ref new_expression, last_result))
             {
                 try
                 {
                     last_result = Convert.ToInt64(new_expression); //juste pour vérifier que le calcul est OK et sauvegarder le dernier calc
                     if(new_expression[0] == '-')
-                    {
                         i = 1;
-                    }
                     else
-                    {
                         i = 0;
-
-                    }
                     j = new_expression.Length - 1; 
                     while(j - 3 >= i)
                     {
@@ -46,9 +40,7 @@ namespace cmd_Linux
                 catch(Exception)
                 {
                     if(new_expression != "")
-                    {
                         Console.WriteLine("> calc: calcul error");
-                    }
                 }
             }
 
@@ -65,6 +57,7 @@ namespace cmd_Linux
                 new_expression = new_expression + cmd[i];
             }
 
+            new_expression = addImplicitOperator(new_expression);
             if (next_operation_to_do(ref new_expression, last_result, false))
             {
                 try
@@ -86,12 +79,14 @@ namespace cmd_Linux
             int i = 0;
             int j;
             int nbrpar = 0;
+            bool containNumbers = false;
 
             while(i < cmd.Length)
             {
                 j = 0;
-                while (j < cmd[i].Length && (Char.IsNumber(cmd[i][j]) || cmd[i][j] == '(' || cmd[i][j] == ')' || cmd[i][j] == '*' || cmd[i][j] == '/' || cmd[i][j] == '+' || cmd[i][j] == '-' || cmd[i][j] == '^' || cmd[i][j] == '%'))
+                while (j < cmd[i].Length && nbrpar >= 0 && (Char.IsNumber(cmd[i][j]) || cmd[i][j] == '(' || cmd[i][j] == ')' || cmd[i][j] == '*' || cmd[i][j] == '/' || cmd[i][j] == '+' || cmd[i][j] == '-' || cmd[i][j] == '^' || cmd[i][j] == '%'))
                 {
+                    containNumbers = Char.IsNumber(cmd[i][j]) || containNumbers;
                     if (cmd[i][j] == '(')
                     {
                         nbrpar++;
@@ -112,7 +107,7 @@ namespace cmd_Linux
                 }
             }
 
-            return (i == cmd.Length && nbrpar == 0);
+            return (i == cmd.Length && containNumbers && nbrpar == 0);
         } //on défini un symbole comme mathématique
 
         private static bool process_calculator(ref string calc, int operation_index, long last_result, bool show_error)
@@ -127,17 +122,11 @@ namespace cmd_Linux
                     try
                     {
                         if(calc[0] == '-')
-                        {
                             nbr1 = -1 * Convert.ToInt64(calc.Substring(1, operation_index - 1));
-                        }
                         else if(calc[0] == '+')
-                        {
                             nbr1 = Convert.ToInt64(calc.Substring(1, operation_index - 1));
-                        }
                         else
-                        {
                             nbr1 = Convert.ToInt64(calc.Substring(0, operation_index));
-                        }
 
                     }
                     catch (Exception e)
@@ -145,51 +134,35 @@ namespace cmd_Linux
                         if(show_error)
                         {
                             if(e.HResult == -2146233066)
-                            {
                                 Console.WriteLine("> calc: " + calc.Substring(0, operation_index) + ": overtake calcul capacity");
-                            }
                             else
-                            {
                                 Console.WriteLine("> calc: " + calc.Substring(0, operation_index) + ": invalid argument");
-                            }
                         }
                         return (false);
                     }
                 }
                 else
-                {
                     nbr1 = last_result;
-                }
 
                 if(calc[operation_index] != '²')
                 {
                     try
                     {
                         if (calc[operation_index + 1] == '-')
-                        {
                             nbr2 = -1 * Convert.ToInt64(calc.Substring(operation_index + 2, calc.Length - 2 - operation_index));
-                        }
                         else if (calc[operation_index + 1] == '-')
-                        {
                             nbr2 = Convert.ToInt64(calc.Substring(operation_index + 2, calc.Length - 2 - operation_index));
-                        }
                         else
-                        {
                             nbr2 = Convert.ToInt64(calc.Substring(operation_index + 1, calc.Length - 1 - operation_index));
-                        }
                     }
                     catch (Exception e)
                     {
                         if (show_error)
                         {
                             if (e.HResult == -2146233066)
-                            {
                                 Console.WriteLine("> calc: " + calc.Substring(0, operation_index) + ": overtake calcul capacity");
-                            }
                             else
-                            {
                                 Console.WriteLine("> calc: " + calc.Substring(operation_index + 1, calc.Length - 1 - operation_index) + ": invalid argument");
-                            }
                         }
                         return (false);
                     }
@@ -202,16 +175,23 @@ namespace cmd_Linux
                 switch(calc[operation_index]) //on defini l'action de l'opérateur sur les nombres nrb1 et nrb2 qui entourent l'opérateur
                 {
                     case ('%'):
-                        try
+                        if (nbr2 != 0)
                         {
-                            calc = (checked(nbr1 % nbr2)).ToString();
-                        }
-                        catch (OverflowException)
-                        {
-                            if(show_error)
+                            try
                             {
-                                Console.WriteLine("> calc: overtake calcul capacity");
+                                calc = (checked(nbr1 % nbr2)).ToString();
                             }
+                            catch (OverflowException)
+                            {
+                                if (show_error)
+                                    Console.WriteLine("> calc: overtake calcul capacity");
+                                return (false);
+                            }
+                        }
+                        else
+                        {
+                            if (show_error)
+                                Console.WriteLine("> calc: can't divise by 0");
                             return (false);
                         }
                         break;
@@ -219,24 +199,18 @@ namespace cmd_Linux
                         try
                         {
                             if(pwd(ref nbr1,nbr2))
-                            {
                                 calc = (checked(nbr1)).ToString();
-                            }
                             else
                             {
                                 if (show_error)
-                                {
                                     Console.WriteLine("> calc: overtake calcul capacity");
-                                }
                                 return (false);
                             }
                         }
                         catch (OverflowException)
                         {
                             if (show_error)
-                            {
                                 Console.WriteLine("> calc: overtake calcul capacity");
-                            }
                             return (false);
                         }
                         break;
@@ -244,13 +218,11 @@ namespace cmd_Linux
                         try
                         {
                             calc = (checked(nbr1 * nbr2)).ToString();
-                        }
+                        } 
                         catch (OverflowException)
                         {
                             if (show_error)
-                            {
                                 Console.WriteLine("> calc: overtake calcul capacity");
-                            }
                             return (false);
                         }
                         break;
@@ -262,9 +234,7 @@ namespace cmd_Linux
                         catch(OverflowException)
                         {
                             if (show_error)
-                            {
                                 Console.WriteLine("> calc: overtake calcul capacity");
-                            }
                             return (false);
                         }
                         break;
@@ -278,18 +248,14 @@ namespace cmd_Linux
                             catch (OverflowException)
                             {
                                 if (show_error)
-                                {
                                     Console.WriteLine("> calc: overtake calcul capacity");
-                                }
                                 return (false);
                             }
                         }
                         else
                         {
                             if (show_error)
-                            {
                                 Console.WriteLine("> calc: can't divise by 0");
-                            }
                             return (false);
                         }
                         break;
@@ -297,24 +263,18 @@ namespace cmd_Linux
                         try
                         {
                             if(result_is_valid(nbr1, nbr2, (nbr1+nbr2), '+'))
-                            {
                                 calc = (checked(nbr1 + nbr2)).ToString();
-                            }
                             else
                             {
                                 if (show_error)
-                                {
                                     Console.WriteLine("> calc: overtake calcul capacity");
-                                }
                                 return (false);
                             }
                         }
                         catch (OverflowException)
                         {
                             if (show_error)
-                            {
                                 Console.WriteLine("> calc: overtake calcul capacity");
-                            }
                             return (false);
                         }
                         break;
@@ -322,24 +282,18 @@ namespace cmd_Linux
                         try
                         {
                             if (result_is_valid(nbr1, nbr2, (nbr1 - nbr2), '-'))
-                            {
                                 calc = (checked(nbr1 - nbr2)).ToString();
-                            }
                             else
                             {
                                 if (show_error)
-                                {
                                     Console.WriteLine("> calc: overtake calcul capacity");
-                                }
                                 return (false);
                             }
                         }
                         catch (OverflowException)
                         {
                             if (show_error)
-                            {
                                 Console.WriteLine("> calc: overtake calcul capacity");
-                            }
                             return (false);
                         }
                         break;
@@ -348,9 +302,7 @@ namespace cmd_Linux
             else
             {
                 if (show_error)
-                {
                     Console.WriteLine("> calc: argument not found");
-                }
                 return (false);
             }
 
@@ -361,8 +313,7 @@ namespace cmd_Linux
         {
             List<char> operations = new List<char>();
             List<int> operations_index = new List<int>();
-            extract_operations(ref expression, ref operations, ref operations_index, last_result);
-            bool is_ok = true;
+            bool is_ok = extract_operations(ref expression, ref operations, ref operations_index, last_result);
             string calc = "";
             int index_start = 0;
             int index_stop = expression.Length - 1;
@@ -400,7 +351,7 @@ namespace cmd_Linux
             return (is_ok);
         }
 
-        private static void extract_operations(ref string expression, ref List<char> operations, ref List<int> index, long last_result)
+        private static bool extract_operations(ref string expression, ref List<char> operations, ref List<int> index, long last_result)
         {
             int i = 0;
             bool modification = false;
@@ -448,6 +399,7 @@ namespace cmd_Linux
                 index = new List<int>();
                 extract_operations(ref expression, ref operations, ref index, last_result);
             }
+            return (true);
         } //on défini un symbole comme un operateur
 
         private static int most_priority_operation(List<char> operations)
@@ -567,6 +519,22 @@ namespace cmd_Linux
                 default:
                     return (true);
             }
+        }
+
+        private static string addImplicitOperator(string calc)
+        {
+            int i = 1;
+            string result = calc;
+            while(i < result.Length)
+            {
+                if((result[i - 1] == ')' || Char.IsNumber(result[i - 1])) && result[i] == '(')
+                {
+                    result = result.Substring(0, i) + "*" + result.Substring(i,result.Length - i);
+                    i++;
+                }
+                i++;
+            }
+            return (result);
         }
     }
 }
