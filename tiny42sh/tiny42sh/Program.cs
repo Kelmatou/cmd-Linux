@@ -274,12 +274,12 @@ namespace cmd_Linux
                     Console.Write("> cmd Linux: Describe the situation just before the bug:\n> ");
                     answer = Console.ReadLine();
 
-                    mail.From = new MailAddress("1magnum78630@gmail.com");
-                    mail.To.Add("magnum78630@gmail.com");
+                    mail.From = new MailAddress("");//SENDER GMAIL, SECURITY MUST BE LOW
+                    mail.To.Add("");//RECEIVER GMAIL
                     mail.Subject = "cmd Linux: Bug report";
                     mail.Body = "> cmd Linux: an unhandled error occured!\n> Description: " + answer + "\n> Bug report details: \n> " + ex + "\n> cmd Linux version: " + Execution.version;
 
-                    SmtpServer.Credentials = new System.Net.NetworkCredential("1magnum78630@gmail.com", "oceandrive");
+                    SmtpServer.Credentials = new System.Net.NetworkCredential("", "");//SENDER GMAIL + PASSWORD
                     SmtpServer.EnableSsl = true;
 
                     SmtpServer.Send(mail);
@@ -309,10 +309,10 @@ namespace cmd_Linux
 
                 //Console.Write("> cmd Linux: Enter your email address: ");
                 //address = Console.ReadLine();
-                mail.From = new MailAddress("1magnum78630@gmail.com");
+                mail.From = new MailAddress("");//SENDER GMAIL
                 // Console.Write("> cmd Linux: Enter your email password: ");
                 //password = Console.ReadLine();
-                mail.To.Add("magnum78630@gmail.com");
+                mail.To.Add("");//RECEIVER GMAIL
                 mail.Subject = "cmd Linux: Feedback";
                 if (display_message)
                 {
@@ -321,7 +321,7 @@ namespace cmd_Linux
                 }
                 mail.Body = "> cmd Linux: Feedback: " + answer + "\n> cmd Linux details: \n> " + message;
 
-                SmtpServer.Credentials = new System.Net.NetworkCredential("1magnum78630@gmail.com", "oceandrive");
+                SmtpServer.Credentials = new System.Net.NetworkCredential("", "");//SENDER GMAIL + PASSWORD
                 SmtpServer.EnableSsl = true;
 
                 SmtpServer.Send(mail);

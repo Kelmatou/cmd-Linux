@@ -82,35 +82,7 @@ namespace cmd_Linux
             {
                 StreamReader check = new StreamReader(appdata_dir + "/settings");
                 string current_line = check.ReadLine();
-                int i = 0;
-
-                while (i < Execution.version.Length && current_line != null)
-                {
-                    if (Char.IsNumber(Execution.version[i]))
-                    {
-                        if (Convert.ToInt32(Execution.version[i].ToString()) == current_line.Length)
-                        {
-                            for (int j = 0; j < Convert.ToInt32(Execution.version[i].ToString()); j++)
-                            {
-                                if ((j > 4 && (current_line.Length <= j || current_line[j] != '\t')) || (j < 5 && (current_line.Length <= j || current_line[j] != ' ')))
-                                {
-                                    i = Execution.version.Length + 1;
-                                    break;
-                                }
-                            }
-                            current_line = check.ReadLine();
-                        }
-                        else
-                            i = Execution.version.Length + 1;
-                    }
-                    i++;
-                }
-
-                check.Close();
-                while (i < Execution.version.Length && !(Char.IsNumber(Execution.version[i])))
-                    i++;
-
-                return (i == Execution.version.Length && current_line == null);
+		//CREATE A FUNCTION THAT VERIFY THE INIT CODE
             }
             catch (Exception)
             {
@@ -123,88 +95,26 @@ namespace cmd_Linux
         {
             StreamWriter init = new StreamWriter(file_path);
 
-            for (int i = 0; i < Execution.version.Length; i++)
-            {
-                if (Char.IsNumber(Execution.version[i]))
-                {
-                    for (int j = 0; j < Convert.ToInt32(Execution.version[i].ToString()); j++)
-                    {
-                        if (j > 4)
-                            init.Write("\t");
-                        else
-                            init.Write(" ");
-                    }
-                    init.WriteLine();
-                }
-            }
+            //GENERATE YOUR INIT FILE
 
             init.Close();
         }
 
         private static char encrypt_time(int time)
         {
-            switch (time)
-            {
-                case (0):
-                    return ('>');
-                case (1):
-                    return ('c');
-                case (2):
-                    return ('m');
-                case (3):
-                    return ('d');
-                case (4):
-                    return ('_');
-                case (5):
-                    return ('l');
-                case (6):
-                    return ('i');
-                case (7):
-                    return ('n');
-                case (8):
-                    return ('u');
-                case (9):
-                    return ('x');
-                default:
-                    return (' ');
-            }
+            //ENCRYPT TIME VALUE
         }
 
         private static int decrypt_time(char crypted)
         {
-            switch (crypted)
-            {
-                case ('>'):
-                    return (0);
-                case ('c'):
-                    return (1);
-                case ('m'):
-                    return (2);
-                case ('d'):
-                    return (3);
-                case ('_'):
-                    return (4);
-                case ('l'):
-                    return (5);
-                case ('i'):
-                    return (6);
-                case ('n'):
-                    return (7);
-                case ('u'):
-                    return (8);
-                case ('x'):
-                    return (9);
-                default:
-                    return (-1);
-            }
+            //DECRYPT TIME VALUE
         }
 
         private static string cryptage_userName(string userName, int time)
         {
             string userName_crypted = "";
 
-            for (int i = 0; i < userName.Length; i++)
-                userName_crypted = userName_crypted + (char)(userName[i] ^ time);
+            //ENCRYPT USERNAME
 
             return (userName_crypted);
         }
@@ -213,15 +123,8 @@ namespace cmd_Linux
         {
             string security_code = DateTime.Now.Year + (DateTime.Now.Month + 100).ToString().Substring(1, 2) + (DateTime.Now.Day + 100).ToString().Substring(1, 2) + (DateTime.Now.Hour + 100).ToString().Substring(1, 2) + (DateTime.Now.Minute + 100).ToString().Substring(1, 2) + (DateTime.Now.Second + 100).ToString().Substring(1, 2);
             string encryptage = "";
-            Random rnd = new Random();
-            int key = rnd.Next(0, 10);
 
-            for (int i = 0; i < security_code.Length; i++)
-                encryptage = encryptage + ((int)security_code[i] + security_code.Length).ToString();
-
-            for (int i = 0; i < key; i++)
-                encryptage = encryptage[encryptage.Length - 1] + encryptage.Substring(0, encryptage.Length - 1);
-            encryptage = encryptage + (char)(key + encryptage.Length + 42);
+	    //ENCRYPT SECURITY CODE
 
             return (encryptage);
         }
@@ -229,25 +132,8 @@ namespace cmd_Linux
         private static string decrypt_security_code(string security_code)
         {
             string decrypted_security_code = "";
-            int key = (int)(security_code[security_code.Length - 1] - 41 - security_code.Length);
-            security_code = security_code.Substring(0, security_code.Length - 1);
-
-            for (int i = 0; i < key; i++)
-                security_code = security_code.Substring(1, security_code.Length - 1) + security_code[0];
-
-            for (int i = 0; i < security_code.Length / 2; i++)
-            {
-                try
-                {
-                    decrypted_security_code = decrypted_security_code + (char)(Convert.ToInt32(security_code.Substring(i * 2, 2)) - security_code.Length / 2);
-                }
-                catch (Exception)
-                {
-                    Console.WriteLine("> cmd Linux: Invalid security code");
-                    security_code = "";
-                    decrypted_security_code = "";
-                }
-            }
+            
+	    //DECRYPT SECURITY CODE
 
             return (decrypted_security_code);
         }
@@ -255,19 +141,10 @@ namespace cmd_Linux
         public static bool encrypt_password(string new_password, string user, string appdata_dir)
         {
             string password_crypter = "";
-            int time = DateTime.Now.Minute % 10;
-            Random rnd = new Random();
 
             if (new_password.Length > 0 && user.Length > 0)
             {
-                for (int i = 0; i < new_password.Length; i++)
-                {
-                    if (new_password[i] <= 126 && new_password[i] >= 33)
-                        password_crypter = password_crypter + (char)(((new_password[i] + i + time) % 94) + 33);
-                    else
-                        password_crypter = password_crypter + new_password[i];
-                }
-                password_crypter = password_crypter + encrypt_time(time);
+                //ENCRYPT PASSWORD
 
                 return (savePasswordFile(appdata_dir, time, password_crypter, user, rnd));
             }
@@ -280,8 +157,6 @@ namespace cmd_Linux
             string userName_crypted;
             string password_crypted;
             string security_code_crypted;
-            int time = 0;
-            int new_char;
             password = "";
 
             if (File.Exists(appdata_dir + "/settings"))
@@ -312,30 +187,7 @@ namespace cmd_Linux
             {
                 if (decrypt_security_code(security_code_crypted) == (File.GetLastWriteTime(appdata_dir + "/settings").Year + (File.GetLastWriteTime(appdata_dir + "/settings").Month + 100).ToString().Substring(1, 2) + (File.GetLastWriteTime(appdata_dir + "/settings").Day + 100).ToString().Substring(1, 2) + (File.GetLastWriteTime(appdata_dir + "/settings").Hour + 100).ToString().Substring(1, 2) + (File.GetLastWriteTime(appdata_dir + "/settings").Minute + 100).ToString().Substring(1, 2) + (File.GetLastWriteTime(appdata_dir + "/settings").Second + 100).ToString().Substring(1, 2)))
                 {
-                    userName_crypted = Library.extractString(userName_crypted, '¿', '¡');
-                    password_crypted = Library.extractString(password_crypted, '¡', '¿');
-                    time = decrypt_time(password_crypted[password_crypted.Length - 1]);
-                    if (time > -1)
-                    {
-                        for (int i = 0; i < password_crypted.Length - 1; i++)
-                        {
-                            if (password_crypted[i] <= 126 && password_crypted[i] >= 33)
-                            {
-                                new_char = password_crypted[i] - 33;
-                                if (new_char - i - time < 33)
-                                    new_char = 94 + new_char;
-                                new_char = new_char - i - time;
-                                password = password + (char)new_char;
-                            }
-                            else
-                                password = password + password_crypted[i];
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("> cmd linux: unable to recover password: data was corrupted.");
-                        return (false);
-                    }
+                    //DECRYPT PASSWORD
                 }
                 else
                 {
@@ -383,9 +235,7 @@ namespace cmd_Linux
             {
                 StreamWriter save = new StreamWriter(appdata_dir + "/settings");
 
-                save.WriteLine(encrypt_security_code());
-                save.WriteLine(safeString('¿', 128, rnd) + cryptage_userName(userName, time) + '¡' + safeString('A', 128, rnd));
-                save.WriteLine(safeString('¡', 128, rnd) + password_crypter + '¿' + safeString('R', 128, rnd));
+                //SAVE YOUR PASSWORD FILE
 
                 save.Close();
 
