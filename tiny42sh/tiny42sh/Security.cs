@@ -201,16 +201,9 @@ namespace cmd_Linux
             {
                 if (is_good_init_code(appdata_dir) && canInitialize)
                 {
-                    long arg_needed = 0;
-                    int arg_needed3 = 0;
-                    string arg_needed5 = "";
-                    string[] arg_needed4 = new string[0];
                     superuser = true;
-                    List<Genius_data> arg_needed2 = new List<Genius_data>();
-                    List<Link> arg_link = new List<Link>();
-                    NotificationManager arg_notif = new NotificationManager("");
                     Console.WriteLine("> cmd linux: initialisation of your password: ");
-                    if (!((Execution.execute_input(new string[1][] { new string[1] { "password" } }, "", appdata_dir, ref superuser, ref superuser, ref arg_needed, ref arg_needed2, ref superuser, ref superuser, ref superuser, ref arg_needed3, ref superuser, ref superuser, ref superuser, ref superuser, ref superuser, ref arg_needed4, ref arg_needed3, ref arg_needed3, ref arg_needed5, ref arg_link, ref arg_notif)) == 0))
+                    if (!((Execution.execute_input(new string[1][] { new string[1] { "password" } })) == 0))
                     {
                         superuser = false;
                         return (false);

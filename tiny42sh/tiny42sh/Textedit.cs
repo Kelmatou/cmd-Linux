@@ -361,15 +361,7 @@ namespace cmd_Linux
                 case (ConsoleKey.N):
                     if (key_input.Modifiers == ConsoleModifiers.Control)
                     {
-                        bool arg_bool = true;
-                        long arg_long = 0;
-                        List<Genius_data> arg_genius_data = new List<Genius_data>();
-                        List<Link> argLink = new List<Link>();
-                        NotificationManager arg_notif = new NotificationManager("");
-                        int arg_int = 0;
-                        string arg_string = "";
-                        string[] arg_tab = new string[0];
-                        Execution.execute_input(new string[1][] { new string[1] { "launch" } }, "", "", ref arg_bool, ref arg_bool, ref arg_long, ref arg_genius_data, ref arg_bool, ref arg_bool, ref arg_bool, ref arg_int, ref arg_bool, ref arg_bool, ref arg_bool, ref arg_bool, ref arg_bool, ref arg_tab, ref arg_int, ref arg_int, ref arg_string, ref argLink, ref arg_notif);
+                        Execution.execute_input(new string[1][] { new string[1] { "launch" } });
                         input_pointer--;
                         return (0);
                     }

@@ -89,7 +89,7 @@ namespace cmd_Linux
             return (false);
         }
 
-        public void triggerNotifications(DateTime dateNotification, string desktop_dir, string appdata_dir, ref bool working, ref bool superuser, ref long last_result, ref List<Genius_data> genius_data, ref bool script_enable, ref bool genius_enable, ref bool private_mode, ref int refresh_timer, ref bool auto_lock, ref bool auto_log, ref bool cmd_print_user, ref bool cmd_print_path, ref bool cmd_print_time, ref string[] previous_directory, ref int previous_directory_pointer, ref int max_genius_data, ref string language, ref List<Link> allLinks, ref NotificationManager notificationManager, bool allowBeforeDate = false)
+        public void triggerNotifications(DateTime dateNotification, bool allowBeforeDate = false)
         {
             int i = 0;
             bool modification = false;
@@ -104,13 +104,13 @@ namespace cmd_Linux
                         Console.Write("\n> ");
                         Console.ForegroundColor = currentColor;
                         Console.WriteLine(content[i]);
-                        Program.print_cmd_intro_line(cmd_print_time, cmd_print_user, cmd_print_path, superuser);
+                        Program.print_cmd_intro_line();
                     }
                     else if (contentType[i] == "EXE")
                     {
                         Console.WriteLine();
-                        Execution.execute_input(Interpreter.parse_input(content[i], appdata_dir), desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager);
-                        Program.print_cmd_intro_line(cmd_print_time, cmd_print_user, cmd_print_path, superuser);
+                        Execution.execute_input(Interpreter.parse_input(content[i], ShellEnvironment.appdata_dir));
+                        Program.print_cmd_intro_line();
                     }
                     else if (contentType[i] == "COLOR")
                         changeColor(content[i]);
@@ -125,7 +125,7 @@ namespace cmd_Linux
                 i++;
             }
             if (modification)
-                Library.saveFile(appdata_dir + "/notification", getNotificationFile());
+                Library.saveFile(ShellEnvironment.appdata_dir + "/notification", getNotificationFile());
         }
 
         public bool addNotification(string appdata_dir, DateTime date, string contentType, string content)

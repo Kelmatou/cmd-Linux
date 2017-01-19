@@ -82,6 +82,7 @@
   <ItemGroup>
     <Compile Include="Breakout.cs" />
     <Compile Include="Calculator.cs" />
+    <Compile Include="ShellEnvironment.cs" />
     <Compile Include="Execution.cs" />
     <Compile Include="Genius_data.cs" />
     <Compile Include="Interpreter.cs" />

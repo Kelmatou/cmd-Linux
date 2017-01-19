@@ -169,7 +169,6 @@ namespace cmd_Linux
                         {
                             words.Add(command.Substring(last_stop, i - last_stop));
                         }
-                        
                     }
                     last_stop = i + 1;
                     while(last_stop < command.Length && command[last_stop] == ' ')
@@ -179,22 +178,18 @@ namespace cmd_Linux
                     }
                 }
                 else if(command[i] == '"')
-                {
                     quote_mode = !quote_mode;
-                }
                 i++;
             }
             if (last_stop < command.Length)
             {
-                if (command[last_stop] == '"')
+                if (command[last_stop] == '"' && command.Length > last_stop + 1)
                 {
                     if (command.Substring(last_stop + 1, i - last_stop - 2).Length > 0)
                     {
                         words.Add(command.Substring(last_stop + 1, i - last_stop - 2));
                         if (words[words.Count - 1].Length > 1 && words[words.Count - 1][words[words.Count - 1].Length - 1] == ';')
-                        {
                             words[words.Count - 1] = words[words.Count - 1].Substring(0, words[words.Count - 1].Length - 1);
-                        }
                     }
                 }
                 else

@@ -18,17 +18,17 @@ namespace cmd_Linux
 {
     public static class Execution
     {
-        public static string version = "16_09_17_18_24 [3.0.0]"; //SI PLUS UNE VERSION BETA, PENSER A RETIRER LA COMMANDE /feedback!!!!
+        public static string version = "17_01_19_20_02 [3.1.0]"; //SI PLUS UNE VERSION BETA, PENSER A RETIRER LA COMMANDE /feedback!!!!
         public static string editor = "Antoine CLOP (Kelmatou Apps)";
 
-        static private int execute_command(ref string[][] input, int input_number, string[] cmd, string desktop_dir, string appdata_dir, ref bool working, ref bool superuser, ref long last_result, ref List<Genius_data> genius_data, ref bool script_enable, ref bool genius_enable, ref bool private_mode, ref int refresh_timer, ref bool auto_lock, ref bool auto_log, ref bool cmd_print_user, ref bool cmd_print_path, ref bool cmd_print_time, ref string[] previous_directory, ref int previous_directory_pointer, ref int max_genius_data, ref string language, ref List<Link> allLinks, ref NotificationManager notificationManager)
+        static private int execute_command(ref string[][] input, int input_number, string[] cmd)
         {
             if (Interpreter.is_keyword(cmd[0]) != Interpreter.Keyword.None)
             {
-                if(!private_mode)
-                    add_1_usage_to_genius_cmd(cmd[0], appdata_dir);
+                if (!ShellEnvironment.private_mode)
+                    add_1_usage_to_genius_cmd(cmd[0], ShellEnvironment.appdata_dir);
                 if(cmd.Length == 2 && cmd[1] == "?")
-                    return (execute_help(new string[] { "help", cmd[0] }, appdata_dir));
+                    return (execute_help(new string[] { "help", cmd[0] }, ShellEnvironment.appdata_dir));
                 else
                 {
                     switch (Interpreter.is_keyword(cmd[0]))
@@ -36,7 +36,7 @@ namespace cmd_Linux
                         case (Interpreter.Keyword.ls):
                             return (execute_ls(cmd));
                         case (Interpreter.Keyword.cd):
-                            return (execute_cd(cmd, ref previous_directory, ref previous_directory_pointer));
+                            return (execute_cd(cmd, ref ShellEnvironment.previous_directories, ref ShellEnvironment.previous_directory_pointer));
                         case (Interpreter.Keyword.cat):
                             return (execute_cat(cmd));
                         case (Interpreter.Keyword.touch):
@@ -56,11 +56,11 @@ namespace cmd_Linux
                         case (Interpreter.Keyword.hostname):
                             return (execute_hostname());
                         case (Interpreter.Keyword.help):
-                            return (execute_help(cmd, appdata_dir));
+                            return (execute_help(cmd, ShellEnvironment.appdata_dir));
                         case (Interpreter.Keyword.launch):
-                            return (execute_launch(cmd, ref notificationManager, appdata_dir));
+                            return (execute_launch(cmd, ref ShellEnvironment.notificationManager, ShellEnvironment.appdata_dir));
                         case (Interpreter.Keyword.shutdown):
-                            return (execute_shutdown(cmd, ref notificationManager, appdata_dir));
+                            return (execute_shutdown(cmd, ref ShellEnvironment.notificationManager, ShellEnvironment.appdata_dir));
                         case (Interpreter.Keyword.info):
                             return (execute_info());
                         case (Interpreter.Keyword.cp):
@@ -72,10 +72,10 @@ namespace cmd_Linux
                         case (Interpreter.Keyword.taskkill):
                             return (execute_taskkill(cmd));
                         case (Interpreter.Keyword.home):
-                            return (execute_home(desktop_dir, ref previous_directory, ref previous_directory_pointer));
+                            return (execute_home(ShellEnvironment.desktop_dir, ref ShellEnvironment.previous_directories, ref ShellEnvironment.previous_directory_pointer));
                         case (Interpreter.Keyword.uninstall):
-                            if (superuser)
-                                return (execute_uninstall(appdata_dir));
+                            if (ShellEnvironment.superuser)
+                                return (execute_uninstall(ShellEnvironment.appdata_dir));
                             else
                             {
                                 Console.WriteLine("> cmd Linux: uninstall: access denied!");
@@ -84,7 +84,7 @@ namespace cmd_Linux
                         case (Interpreter.Keyword.url):
                             return (execute_url(cmd));
                         case (Interpreter.Keyword.lolapp):
-                            return (execute_lolapp(cmd, appdata_dir));
+                            return (execute_lolapp(cmd, ShellEnvironment.appdata_dir));
                         case (Interpreter.Keyword.integreted_web_site):
                             return (execute_integreted_web_site(cmd));
                         case (Interpreter.Keyword.facebook):
@@ -106,16 +106,16 @@ namespace cmd_Linux
                         case (Interpreter.Keyword.yahoo):
                             return (execute_yahoo(cmd));
                         case (Interpreter.Keyword.skype):
-                            return (execute_skype(cmd, appdata_dir));
+                            return (execute_skype(cmd, ShellEnvironment.appdata_dir));
                         case (Interpreter.Keyword.ts):
-                            return (execute_ts(cmd, appdata_dir));
+                            return (execute_ts(cmd, ShellEnvironment.appdata_dir));
                         case (Interpreter.Keyword.textedit):
-                            return (Textedit.execute_textedit(cmd, appdata_dir, language));
+                            return (Textedit.execute_textedit(cmd, ShellEnvironment.appdata_dir, ShellEnvironment.language));
                         case (Interpreter.Keyword.script):
-                            return (execute_script(cmd, appdata_dir, ref input, input_number));
+                            return (execute_script(cmd, ShellEnvironment.appdata_dir, ref input, input_number));
                         case (Interpreter.Keyword.reset):
-                            if (superuser)
-                                return (execute_reset(cmd, appdata_dir, ref genius_data));
+                            if (ShellEnvironment.superuser)
+                                return (execute_reset(cmd, ShellEnvironment.appdata_dir, ref ShellEnvironment.all_genius_data));
                             else
                             {
                                 Console.WriteLine("> cmd Linux: reset: access denied!");
@@ -132,12 +132,12 @@ namespace cmd_Linux
                         case (Interpreter.Keyword.rename):
                             return (execute_rename(cmd));
                         case (Interpreter.Keyword.password):
-                            return (execute_password(superuser, appdata_dir));
+                            return (execute_password(ShellEnvironment.superuser, ShellEnvironment.appdata_dir));
                         case (Interpreter.Keyword.@lock):
                             return (execute_lock(cmd));
                         case (Interpreter.Keyword.option):
-                            if (superuser)
-                                return (execute_option(ref script_enable, ref refresh_timer, ref auto_lock, ref genius_enable, ref private_mode, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref max_genius_data, ref language, appdata_dir));
+                            if (ShellEnvironment.superuser)
+                                return (execute_option());
                             else
                             {
                                 Console.WriteLine("> cmd Linux: option: access denied!");
@@ -150,7 +150,7 @@ namespace cmd_Linux
                         case (Interpreter.Keyword.find):
                             return (execute_find(cmd));
                         case (Interpreter.Keyword.time):
-                            return (execute_time(cmd, refresh_timer));
+                            return (execute_time(cmd, ShellEnvironment.refresh_timer));
                         case (Interpreter.Keyword.seed):
                             return (execute_seed());
                         case (Interpreter.Keyword.network):
@@ -168,9 +168,9 @@ namespace cmd_Linux
                         case (Interpreter.Keyword.dice):
                             return (execute_dice(cmd));
                         case (Interpreter.Keyword.reminder):
-                            return (execute_reminder(cmd, appdata_dir, ref notificationManager));
+                            return (execute_reminder(cmd, ShellEnvironment.appdata_dir, ref ShellEnvironment.notificationManager));
                         case (Interpreter.Keyword.link):
-                            return (execute_link(cmd, ref allLinks));
+                            return (execute_link(cmd, ref ShellEnvironment.allLinks));
                         case (Interpreter.Keyword.tree):
                             return (execute_tree(cmd));
                         case (Interpreter.Keyword.hash):
@@ -178,53 +178,53 @@ namespace cmd_Linux
                         case (Interpreter.Keyword.crypto):
                             return (execute_crypto(cmd));
                         case (Interpreter.Keyword.@if):
-                            return (execute_if(cmd, desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager));
+                            return (execute_if(cmd));
                         case (Interpreter.Keyword.@while):
-                            return (execute_while(cmd, desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager));
+                            return (execute_while(cmd));
                         case (Interpreter.Keyword.@for):
-                            return (execute_for(cmd, desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager));
+                            return (execute_for(cmd));
                         case (Interpreter.Keyword.man):
                             return (execute_man(cmd));
                         case (Interpreter.Keyword.exit):
-                            return (execute_exit(ref working));
+                            return (execute_exit(ref ShellEnvironment.working));
                         case (Interpreter.Keyword.admin):
-                            return (execute_admin(ref superuser, appdata_dir));
+                            return (execute_admin(ref ShellEnvironment.superuser, ShellEnvironment.appdata_dir));
                         case (Interpreter.Keyword.unadmin):
-                            return (execute_unadmin(ref superuser));
+                            return (execute_unadmin(ref ShellEnvironment.superuser));
                     }
                 }
             }
             if(Calculator.is_math_expression(cmd))
-                return(Calculator.execute_calculator(cmd, ref last_result));
-            if(cmd.Length > 0 && File.Exists(appdata_dir + "/script_files/" + cmd[0]))
+                return (Calculator.execute_calculator(cmd, ref ShellEnvironment.last_result));
+            if (cmd.Length > 0 && File.Exists(ShellEnvironment.appdata_dir + "/script_files/" + cmd[0]))
             {
                 if(cmd.Length == 2 && cmd[1] == "?")
-                    return (execute_script(new string[3] { "script", "/display", cmd[0] }, appdata_dir, ref input, input_number));
-                return (execute_script(new string[2] { "script", cmd[0] }, appdata_dir, ref input, input_number));
+                    return (execute_script(new string[3] { "script", "/display", cmd[0] }, ShellEnvironment.appdata_dir, ref input, input_number));
+                return (execute_script(new string[2] { "script", cmd[0] }, ShellEnvironment.appdata_dir, ref input, input_number));
             }
             if(cmd.Length > 0 && File.Exists(Directory.GetCurrentDirectory() + "/" + cmd[0]))
                 return (execute_launch(new string[2] { "launch", cmd[0] }));
             return (execute_unknown_cmd(cmd));
         }
 
-        static public int execute_input(string[][] input, string desktop_dir, string appdata_dir, ref bool working, ref bool superuser, ref long last_result, ref List<Genius_data> genius_data, ref bool script_enable, ref bool genius_enable, ref bool private_mode, ref int refresh_timer, ref bool auto_lock, ref bool auto_log, ref bool cmd_print_user, ref bool cmd_print_path, ref bool cmd_print_time, ref string[] previous_directory, ref int previous_directory_pointer, ref int max_genius_data, ref string language, ref List<Link> allLinks, ref NotificationManager notificationManager)
-        {   
-            for (int i = 0; i < input.GetLength(0) - 1 && working; i++ )
+        static public int execute_input(string[][] input)
+        {
+            for (int i = 0; i < input.GetLength(0) - 1 && ShellEnvironment.working; i++)
             {
                 if(input[i].Length > 0)
                 {
-                    Interpreter.replaceLinks(ref input[i], allLinks);
-                    if (!private_mode)
-                        update_genius_data(appdata_dir, input[i], ref genius_data, max_genius_data);
-                    execute_command(ref input, i, input[i], desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager);
+                    Interpreter.replaceLinks(ref input[i], ShellEnvironment.allLinks);
+                    if (!ShellEnvironment.private_mode)
+                        update_genius_data(ShellEnvironment.appdata_dir, input[i], ref ShellEnvironment.all_genius_data, ShellEnvironment.max_genius_data);
+                    execute_command(ref input, i, input[i]);
                 }
             }
-            if(working && input.GetLength(0) > 0 && input[input.GetLength(0) - 1].Length > 0)
+            if (ShellEnvironment.working && input.GetLength(0) > 0 && input[input.GetLength(0) - 1].Length > 0)
             {
-                Interpreter.replaceLinks(ref input[input.GetLength(0) - 1], allLinks);
-                if (!private_mode)
-                    update_genius_data(appdata_dir, input[input.GetLength(0) - 1], ref genius_data, max_genius_data);
-                return (execute_command(ref input, input.GetLength(0) - 1, input[input.GetLength(0) - 1], desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager));
+                Interpreter.replaceLinks(ref input[input.GetLength(0) - 1], ShellEnvironment.allLinks);
+                if (!ShellEnvironment.private_mode)
+                    update_genius_data(ShellEnvironment.appdata_dir, input[input.GetLength(0) - 1], ref ShellEnvironment.all_genius_data, ShellEnvironment.max_genius_data);
+                return (execute_command(ref input, input.GetLength(0) - 1, input[input.GetLength(0) - 1]));
             }
             else
                 return (0);
@@ -2193,11 +2193,11 @@ namespace cmd_Linux
                 eraser.Close();
                 eraser = new StreamWriter(appdata_dir + "/cmd.bat");
                 eraser.Close();
-                save_option(true, 50, false, true, false, false, true, true, false, 10000, "en", appdata_dir);
-                Program.reinit_file_genius_data_cmd(appdata_dir, Static_data.cmd_linux_commands());
+                save_option(50, true, true, false, "en", true, false, false, true, 10000, false, ConsoleColor.DarkGreen, ConsoleColor.DarkYellow, ConsoleColor.Black);
+                ShellEnvironment.reinit_file_genius_data_cmd(appdata_dir, Static_data.cmd_linux_commands());
             }
             else if (cmd.Length == 2 && cmd[1] == "/stats")
-                Program.reinit_file_genius_data_cmd(appdata_dir, Static_data.cmd_linux_commands());
+                ShellEnvironment.reinit_file_genius_data_cmd(appdata_dir, Static_data.cmd_linux_commands());
             else if (cmd.Length >= 2)
             {
                 if(cmd[1] == "/genius")
@@ -3105,23 +3105,24 @@ namespace cmd_Linux
             return (0);
         } //OK
 
-        static private int execute_option(ref bool script_enable, ref int refresh_timer, ref bool auto_lock, ref bool genius_enable, ref bool private_mode, ref bool auto_log, ref bool cmd_print_user, ref bool cmd_print_path, ref bool cmd_print_time, ref int max_genius_data, ref string language, string appdata_dir)
+        static private int execute_option()
         {
             bool running = true;
             int cursor_first_line = Console.CursorTop;
             int line_select = 1;
+            int column_select = 1;
             ConsoleKeyInfo action;
             Console.CursorVisible = false;
             
             while(running)
             {
-                print_option_menu(cursor_first_line, line_select, script_enable, refresh_timer, auto_lock, genius_enable, private_mode, auto_log, cmd_print_user, cmd_print_path, cmd_print_time, max_genius_data, language);
+                print_option_menu(cursor_first_line, line_select, column_select);
                 action = Console.ReadKey(true);
-                apply_option_menu_action(action, ref line_select, ref script_enable, ref refresh_timer, ref auto_lock, ref genius_enable, ref private_mode, ref running, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref max_genius_data, ref language);
+                apply_option_menu_action(action, ref line_select, ref column_select, ref running);
             }
 
             erase_option_menu(cursor_first_line);
-            save_option(script_enable, refresh_timer, auto_lock, genius_enable, private_mode, auto_log, cmd_print_user, cmd_print_path, cmd_print_time, max_genius_data, language, appdata_dir);
+            save_option();
             Console.CursorVisible = true;
             return (0);
         } //OK
@@ -4624,7 +4625,7 @@ namespace cmd_Linux
             return (0);
         } //OK
 
-        static private int execute_if(string[] cmd, string desktop_dir, string appdata_dir, ref bool working, ref bool superuser, ref long last_result, ref List<Genius_data> genius_data, ref bool script_enable, ref bool genius_enable, ref bool private_mode, ref int refresh_timer, ref bool auto_lock, ref bool auto_log, ref bool cmd_print_user, ref bool cmd_print_path, ref bool cmd_print_time, ref string[] previous_directory, ref int previous_directory_pointer, ref int max_genius_data, ref string language, ref List<Link> allLinks, ref NotificationManager notificationManager)
+        static private int execute_if(string[] cmd)
         {
             int thenIndex = 0;
             int elseIndex = 0;
@@ -4642,13 +4643,13 @@ namespace cmd_Linux
                     return (1);
                 }
                 evaluation = Library.concArrToString(cmd, 1, thenIndex == -1 ? (elseIndex == -1 ? cmd.Length : elseIndex) : thenIndex, true);
-                condition = evaluateExpression(evaluation, desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager);
+                condition = evaluateExpression(evaluation);
                 if(condition)
                 {
                     if(thenIndex != -1)
                     {
                         execution = Library.concArrToString(cmd, thenIndex + 1, elseIndex == -1 ? cmd.Length : elseIndex, true);
-                        Execution.execute_input(Interpreter.parse_input(execution, appdata_dir), desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager);
+                        Execution.execute_input(Interpreter.parse_input(execution, ShellEnvironment.appdata_dir));
                     }
                 }
                 else
@@ -4656,7 +4657,7 @@ namespace cmd_Linux
                     if(elseIndex != -1 && elseIndex < cmd.Length - 1)
                     {
                         execution = Library.concArrToString(cmd, elseIndex + 1, cmd.Length, true);
-                        Execution.execute_input(Interpreter.parse_input(execution, appdata_dir), desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager);
+                        Execution.execute_input(Interpreter.parse_input(execution, ShellEnvironment.appdata_dir));
                     }
                 }
             }
@@ -4668,7 +4669,7 @@ namespace cmd_Linux
             return (0);
         }
 
-        static private int execute_while(string[] cmd, string desktop_dir, string appdata_dir, ref bool working, ref bool superuser, ref long last_result, ref List<Genius_data> genius_data, ref bool script_enable, ref bool genius_enable, ref bool private_mode, ref int refresh_timer, ref bool auto_lock, ref bool auto_log, ref bool cmd_print_user, ref bool cmd_print_path, ref bool cmd_print_time, ref string[] previous_directory, ref int previous_directory_pointer, ref int max_genius_data, ref string language, ref List<Link> allLinks, ref NotificationManager notificationManager)
+        static private int execute_while(string[] cmd)
         {
             int doIndex = 0;
             bool condition = true;
@@ -4685,14 +4686,14 @@ namespace cmd_Linux
                     return (1);
                 }
                 evaluation = Library.concArrToString(cmd, 1, doIndex, true);
-                condition = evaluateExpression(evaluation, desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager);
+                condition = evaluateExpression(evaluation);
                 while(condition)
                 {
                     execution = Library.concArrToString(cmd, doIndex + 1, cmd.Length, true);
-                    Execution.execute_input(Interpreter.parse_input(execution, appdata_dir), desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager);
+                    Execution.execute_input(Interpreter.parse_input(execution, ShellEnvironment.appdata_dir));
                     if (Console.KeyAvailable)
                         key_pressed = Console.ReadKey(true);
-                    condition = key_pressed.Key != ConsoleKey.Escape && evaluateExpression(evaluation, desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager);
+                    condition = key_pressed.Key != ConsoleKey.Escape && evaluateExpression(evaluation);
                 }
             }
             else
@@ -4703,7 +4704,7 @@ namespace cmd_Linux
             return (0);
         }
 
-        static private int execute_for(string[] cmd, string desktop_dir, string appdata_dir, ref bool working, ref bool superuser, ref long last_result, ref List<Genius_data> genius_data, ref bool script_enable, ref bool genius_enable, ref bool private_mode, ref int refresh_timer, ref bool auto_lock, ref bool auto_log, ref bool cmd_print_user, ref bool cmd_print_path, ref bool cmd_print_time, ref string[] previous_directory, ref int previous_directory_pointer, ref int max_genius_data, ref string language, ref List<Link> allLinks, ref NotificationManager notificationManager)
+        static private int execute_for(string[] cmd)
         {
             int toIndex = 0;
             int doIndex = 0;
@@ -4745,7 +4746,7 @@ namespace cmd_Linux
                     for (index = init; (index < limit || toIndex == -1) && key_pressed.Key != ConsoleKey.Escape; index++)
                     {
                         execution = Library.concArrToString(cmd, doIndex + 1, cmd.Length, true);
-                        Execution.execute_input(Interpreter.parse_input(execution, appdata_dir), desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager);
+                        Execution.execute_input(Interpreter.parse_input(execution, ShellEnvironment.appdata_dir));
                         if (Console.KeyAvailable)
                             key_pressed = Console.ReadKey(true);
                     }
@@ -4755,7 +4756,7 @@ namespace cmd_Linux
                     for (index = init; index > limit && key_pressed.Key != ConsoleKey.Escape; index--)
                     {
                         execution = Library.concArrToString(cmd, doIndex + 1, cmd.Length, true);
-                        Execution.execute_input(Interpreter.parse_input(execution, appdata_dir), desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager);
+                        Execution.execute_input(Interpreter.parse_input(execution, ShellEnvironment.appdata_dir));
                         if (Console.KeyAvailable)
                             key_pressed = Console.ReadKey(true);
                     }
@@ -7809,7 +7810,7 @@ namespace cmd_Linux
             }
         }
 
-        static private void print_option_menu(int first_line_position, int current_line, bool script_enable, int refresh_timer, bool auto_lock, bool genius_enable, bool private_mode, bool auto_log, bool cmd_print_user, bool cmd_print_path, bool cmd_print_time, int max_genius_data, string language)
+        static private void print_option_menu(int first_line_position, int current_line, int current_column)
         {
             Console.SetCursorPosition(0, first_line_position + current_line - 1);
             print_n_space(Console.WindowWidth - 1);
@@ -7817,128 +7818,191 @@ namespace cmd_Linux
             if (current_line == 1)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine("> UPDATE:              " + refresh_timer + "ms");
+                Console.WriteLine("> UPDATE:              " + ShellEnvironment.refresh_timer + "ms");
                 Console.ResetColor();
             }
             else
             {
-                Console.WriteLine("> UPDATE:              " + refresh_timer + "ms");
+                Console.WriteLine("> UPDATE:              " + ShellEnvironment.refresh_timer + "ms");
             }
             if (current_line == 2)
             {
-                Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine("> PRINT USER:          " + cmd_print_user);
+                if (current_column == 1)
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.Write("> PRINT USER:          " + ShellEnvironment.cmd_print_user + "      " + (ShellEnvironment.cmd_print_user ? " " : ""));
+                if (ShellEnvironment.user_color == ConsoleColor.Black)
+                    Console.ResetColor();
+                else
+                    Console.ForegroundColor = ShellEnvironment.user_color;
+                if (current_column == 2)
+                {
+                    if (ShellEnvironment.user_color == ConsoleColor.Yellow || ShellEnvironment.user_color == ConsoleColor.DarkYellow)
+                        Console.BackgroundColor = ConsoleColor.DarkGray;
+                    else
+                        Console.BackgroundColor = ConsoleColor.DarkYellow;
+                }
+                else
+                    Console.BackgroundColor = ConsoleColor.Black;
+                Console.WriteLine(Library.get_color_name(ShellEnvironment.user_color));
                 Console.ResetColor();
             }
             else
             {
-                Console.WriteLine("> PRINT USER:          " + cmd_print_user);
+                Console.Write("> PRINT USER:          " + ShellEnvironment.cmd_print_user + "      " + (ShellEnvironment.cmd_print_user ? " " : ""));
+                if (ShellEnvironment.user_color == ConsoleColor.Black)
+                    Console.ResetColor();
+                else
+                    Console.ForegroundColor = ShellEnvironment.user_color;
+                Console.WriteLine(Library.get_color_name(ShellEnvironment.user_color));
+                Console.ResetColor();
             }
             if (current_line == 3)
             {
-                Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine("> PRINT DIRECTORY:     " + cmd_print_path);
+                if (current_column == 1)
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.Write("> PRINT DIRECTORY:     " + ShellEnvironment.cmd_print_path + "      " + (ShellEnvironment.cmd_print_path ? " " : ""));
+                if (ShellEnvironment.path_color == ConsoleColor.Black)
+                    Console.ResetColor();
+                else
+                    Console.ForegroundColor = ShellEnvironment.path_color;
+                if (current_column == 2)
+                {
+                    if (ShellEnvironment.path_color == ConsoleColor.Yellow || ShellEnvironment.path_color == ConsoleColor.DarkYellow)
+                        Console.BackgroundColor = ConsoleColor.DarkGray;
+                    else
+                        Console.BackgroundColor = ConsoleColor.DarkYellow;
+                }
+                else
+                    Console.BackgroundColor = ConsoleColor.Black;
+                Console.WriteLine(Library.get_color_name(ShellEnvironment.path_color));
                 Console.ResetColor();
             }
             else
             {
-                Console.WriteLine("> PRINT DIRECTORY:     " + cmd_print_path);
+                Console.Write("> PRINT DIRECTORY:     " + ShellEnvironment.cmd_print_path + "      " + (ShellEnvironment.cmd_print_path ? " " : ""));
+                if (ShellEnvironment.path_color == ConsoleColor.Black)
+                    Console.ResetColor();
+                else
+                    Console.ForegroundColor = ShellEnvironment.path_color;
+                Console.WriteLine(Library.get_color_name(ShellEnvironment.path_color));
+                Console.ResetColor();
             }
             if (current_line == 4)
             {
-                Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine("> PRINT TIME:          " + cmd_print_time);
+                if (current_column == 1)
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.Write("> PRINT TIME:          " + ShellEnvironment.cmd_print_time + "      " + (ShellEnvironment.cmd_print_time ? " " : ""));
+                if (ShellEnvironment.time_color == ConsoleColor.Black)
+                    Console.ResetColor();
+                else
+                    Console.ForegroundColor = ShellEnvironment.time_color;
+                if (current_column == 2)
+                {
+                    if (ShellEnvironment.time_color == ConsoleColor.Yellow || ShellEnvironment.time_color == ConsoleColor.DarkYellow)
+                        Console.BackgroundColor = ConsoleColor.DarkGray;
+                    else
+                        Console.BackgroundColor = ConsoleColor.DarkYellow;
+                }
+                else
+                    Console.BackgroundColor = ConsoleColor.Black;
+                Console.WriteLine(Library.get_color_name(ShellEnvironment.time_color));
                 Console.ResetColor();
             }
             else
             {
-                Console.WriteLine("> PRINT TIME:          " + cmd_print_time);
+                Console.Write("> PRINT TIME:          " + ShellEnvironment.cmd_print_time + "      " + (ShellEnvironment.cmd_print_time ? " " : ""));
+                if (ShellEnvironment.time_color == ConsoleColor.Black)
+                    Console.ResetColor();
+                else
+                    Console.ForegroundColor = ShellEnvironment.time_color;
+                Console.WriteLine(Library.get_color_name(ShellEnvironment.time_color));
+                Console.ResetColor();
             }
             if (current_line == 5)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine("> TEXTEDIT LANGUAGE:   " + getLanguageName(language));
+                Console.WriteLine("> TEXTEDIT LANGUAGE:   " + getLanguageName(ShellEnvironment.language));
                 Console.ResetColor();
             }
             else
             {
-                Console.WriteLine("> TEXTEDIT LANGUAGE:   " + getLanguageName(language));
+                Console.WriteLine("> TEXTEDIT LANGUAGE:   " + getLanguageName(ShellEnvironment.language));
             }
             if(current_line == 6)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine("> SCRIPT ENABLE:       " + script_enable);
+                Console.WriteLine("> SCRIPT ENABLE:       " + ShellEnvironment.script_enable);
                 Console.ResetColor();
             }
             else
             {
-                Console.WriteLine("> SCRIPT ENABLE:       " + script_enable);
+                Console.WriteLine("> SCRIPT ENABLE:       " + ShellEnvironment.script_enable);
             }
             if (current_line == 7)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine("> AUTO LOCK:           " + auto_lock);
+                Console.WriteLine("> AUTO LOCK:           " + ShellEnvironment.auto_lock);
                 Console.ResetColor();
             }
             else
             {
-                Console.WriteLine("> AUTO LOCK:           " + auto_lock);
+                Console.WriteLine("> AUTO LOCK:           " + ShellEnvironment.auto_lock);
             }
             if (current_line == 8)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine("> AUTO LOG:            " + auto_log);
+                Console.WriteLine("> AUTO LOG:            " + ShellEnvironment.auto_log);
                 Console.ResetColor();
             }
             else
             {
-                Console.WriteLine("> AUTO LOG:            " + auto_log);
+                Console.WriteLine("> AUTO LOG:            " + ShellEnvironment.auto_log);
             }
             if (current_line == 9)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine("> GENIUS ENABLE:       " + genius_enable);
+                Console.WriteLine("> GENIUS ENABLE:       " + ShellEnvironment.genius_enable);
                 Console.ResetColor();
             }
             else
             {
-                Console.WriteLine("> GENIUS ENABLE:       " + genius_enable);
+                Console.WriteLine("> GENIUS ENABLE:       " + ShellEnvironment.genius_enable);
             }
             if (current_line == 10)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
                 Console.Write("> MAX GENIUS DATA:     ");
-                if(max_genius_data == 10000)
+                if (ShellEnvironment.max_genius_data == 10000)
                 {
                     Console.WriteLine("Unlimited");
                 }
                 else
                 {
-                    Console.WriteLine(max_genius_data);
+                    Console.WriteLine(ShellEnvironment.max_genius_data);
                 }
                 Console.ResetColor();
             }
             else
             {
                 Console.Write("> MAX GENIUS DATA:     ");
-                if (max_genius_data == 10000)
+                if (ShellEnvironment.max_genius_data == 10000)
                 {
                     Console.WriteLine("Unlimited");
                 }
                 else
                 {
-                    Console.WriteLine(max_genius_data);
+                    Console.WriteLine(ShellEnvironment.max_genius_data);
                 }
             }
             if (current_line == 11)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine("> PRIVATE MODE:        " + private_mode);
+                Console.WriteLine("> PRIVATE MODE:        " + ShellEnvironment.private_mode);
                 Console.ResetColor();
             }
             else
             {
-                Console.WriteLine("> PRIVATE MODE:        " + private_mode);
+                Console.WriteLine("> PRIVATE MODE:        " + ShellEnvironment.private_mode);
             }
             if (current_line == 12)
             {
@@ -7963,7 +8027,7 @@ namespace cmd_Linux
             Console.SetCursorPosition(0, first_line_position);
         }
 
-        static private void apply_option_menu_action(ConsoleKeyInfo action, ref int current_line, ref bool script_enable, ref int refresh_timer, ref bool auto_lock, ref bool genius_enable, ref bool private_mode, ref bool running, ref bool auto_log, ref bool cmd_print_user, ref bool cmd_print_path, ref bool cmd_print_time, ref int max_genius_data, ref string language)
+        static private void apply_option_menu_action(ConsoleKeyInfo action, ref int current_line, ref int current_column, ref bool running)
         {
             switch(action.Key)
             {
@@ -7972,59 +8036,72 @@ namespace cmd_Linux
                         current_line = 12;
                     else
                         current_line--;
+                    if (current_line == 1 || current_line > 4)
+                        current_column = 1;
                     break;
                 case (ConsoleKey.DownArrow):
                     if (current_line == 12)
                         current_line = 1;
                     else
                         current_line++;
+                    if (current_line == 1 || current_line > 4)
+                        current_column = 1;
                     break;
                 case (ConsoleKey.LeftArrow):
                     switch(current_line)
                     {
                         case (1):
-                            if(refresh_timer >= 5)
-                                refresh_timer -= 5;
+                            if (ShellEnvironment.refresh_timer >= 5)
+                                ShellEnvironment.refresh_timer -= 5;
                             break;
                         case (2):
-                            cmd_print_user = !cmd_print_user;
+                            if (current_column == 1)
+                                ShellEnvironment.cmd_print_user = !ShellEnvironment.cmd_print_user;
+                            else
+                                ShellEnvironment.user_color = Library.get_next_color(ShellEnvironment.user_color);
                             break;
                         case (3):
-                            cmd_print_path = !cmd_print_path;
+                            if (current_column == 1)
+                                ShellEnvironment.cmd_print_path = !ShellEnvironment.cmd_print_path;
+                            else
+                                ShellEnvironment.path_color = Library.get_next_color(ShellEnvironment.path_color);
                             break;
                         case (4):
-                            cmd_print_time = !cmd_print_time;
+                            if (current_column == 1)
+                                ShellEnvironment.cmd_print_time = !ShellEnvironment.cmd_print_time;
+                            else
+                                ShellEnvironment.time_color = Library.get_next_color(ShellEnvironment.time_color);
                             break;
                         case (5):
-                            if (language == "en")
-                                language = "fr";
-                            else if (language == "fr")
-                                language = "en";
+                            if (ShellEnvironment.language == "en")
+                                ShellEnvironment.language = "fr";
+                            else if (ShellEnvironment.language == "fr")
+                                ShellEnvironment.language = "en";
                             break;
                         case (6):
-                            script_enable = !script_enable;
+                            ShellEnvironment.script_enable = !ShellEnvironment.script_enable;
                             break;
                         case (7):
-                            auto_lock = !auto_lock;
+                            ShellEnvironment.auto_lock = !ShellEnvironment.auto_lock;
                             break;
                         case (8):
-                            auto_log = !auto_log;
+                            ShellEnvironment.auto_log = !ShellEnvironment.auto_log;
                             break;
                         case (9):
-                            genius_enable = !genius_enable;
+                            ShellEnvironment.genius_enable = !ShellEnvironment.genius_enable;
                             break;
                         case (10):
-                            if(max_genius_data == 10000)
-                                max_genius_data = 100;
+                            if (ShellEnvironment.max_genius_data == 10000)
+                                ShellEnvironment.max_genius_data = 100;
                             else
                             {
-                                max_genius_data -= 5;
-                                if(max_genius_data == 0)
-                                    max_genius_data = 10000;
+                                ShellEnvironment.max_genius_data -= 5;
+                                if (ShellEnvironment.max_genius_data == 0)
+                                    ShellEnvironment.max_genius_data = 10000;
                             }
                             break;
                         case (11):
-                            private_mode = !private_mode;
+                            ShellEnvironment.private_mode = !ShellEnvironment.private_mode;
                             break;
                     }
                     break;
@@ -8032,56 +8109,72 @@ namespace cmd_Linux
                     switch (current_line)
                     {
                         case (1):
-                            if(refresh_timer <= 2147483642)
-                                refresh_timer += 5;
+                            if (ShellEnvironment.refresh_timer <= 2147483642)
+                                ShellEnvironment.refresh_timer += 5;
                             break;
                         case (2):
-                            cmd_print_user = !cmd_print_user;
+                            if (current_column == 1)
+                                ShellEnvironment.cmd_print_user = !ShellEnvironment.cmd_print_user;
+                            else
+                                ShellEnvironment.user_color = Library.get_prev_color(ShellEnvironment.user_color);
                             break;
                         case (3):
-                            cmd_print_path = !cmd_print_path;
+                            if (current_column == 1)
+                                ShellEnvironment.cmd_print_path = !ShellEnvironment.cmd_print_path;
+                            else
+                                ShellEnvironment.path_color = Library.get_prev_color(ShellEnvironment.path_color);
                             break;
                         case (4):
-                            cmd_print_time = !cmd_print_time;
+                            if (current_column == 1)
+                                ShellEnvironment.cmd_print_time = !ShellEnvironment.cmd_print_time;
+                            else
+                                ShellEnvironment.time_color = Library.get_prev_color(ShellEnvironment.time_color);
                             break;
                         case (5):
-                            if (language == "en")
-                                language = "fr";
-                            else if (language == "fr")
-                                language = "en";
+                            if (ShellEnvironment.language == "en")
+                                ShellEnvironment.language = "fr";
+                            else if (ShellEnvironment.language == "fr")
+                                ShellEnvironment.language = "en";
                             break;
                         case (6):
-                            script_enable = !script_enable;
+                            ShellEnvironment.script_enable = !ShellEnvironment.script_enable;
                             break;
                         case (7):
-                            auto_lock = !auto_lock;
+                            ShellEnvironment.auto_lock = !ShellEnvironment.auto_lock;
                             break;
                         case (8):
-                            auto_log = !auto_log;
+                            ShellEnvironment.auto_log = !ShellEnvironment.auto_log;
                             break;
                         case (9):
-                            genius_enable = !genius_enable;
+                            ShellEnvironment.genius_enable = !ShellEnvironment.genius_enable;
                             break;
                         case (10):
-                            if (max_genius_data == 100)
-                                max_genius_data = 10000;
+                            if (ShellEnvironment.max_genius_data == 100)
+                                ShellEnvironment.max_genius_data = 10000;
                             else
                             {
-                                if(max_genius_data == 10000)
-                                    max_genius_data = 0;
-                                max_genius_data += 5;
+                                if (ShellEnvironment.max_genius_data == 10000)
+                                    ShellEnvironment.max_genius_data = 0;
+                                ShellEnvironment.max_genius_data += 5;
                             }
                             break;
                         case (11):
-                            private_mode = !private_mode;
+                            ShellEnvironment.private_mode = !ShellEnvironment.private_mode;
                             break;
                     }
+                    break;
+                case (ConsoleKey.Tab):
+                    if (current_line >= 2 && current_line <= 4)
+                        current_column = (current_column % 2) + 1;
                     break;
                 case (ConsoleKey.Escape):
                     if(current_line == 12)
                         running = false;
                     else
+                    {
                         current_line = 12;
+                        current_column = 1;
+                    }
                     break;
                 case (ConsoleKey.Enter):
                     if(current_line == 12)
@@ -8090,15 +8183,46 @@ namespace cmd_Linux
             }
         }
 
-        static private void save_option(bool script_enable, int refresh_timer, bool auto_lock, bool genius_enable, bool private_mode, bool auto_log, bool cmd_print_user, bool cmd_print_path, bool cmd_print_time, int max_genius_data, string language, string appdata_dir)
+        static private void save_option()
         {
             try
             {
-                StreamWriter saver = new StreamWriter(appdata_dir + "/option");
+                StreamWriter saver = new StreamWriter(ShellEnvironment.appdata_dir + "/option");
+                saver.WriteLine("UPDATE: " + ShellEnvironment.refresh_timer + "ms");
+                saver.WriteLine("PRINT USER: " + ShellEnvironment.cmd_print_user);
+                saver.WriteLine("PRINT DIRECTORY: " + ShellEnvironment.cmd_print_path);
+                saver.WriteLine("PRINT TIME: " + ShellEnvironment.cmd_print_time);
+                saver.WriteLine("USER COLOR: " + Library.get_color_name(ShellEnvironment.user_color));
+                saver.WriteLine("PATH COLOR: " + Library.get_color_name(ShellEnvironment.path_color));
+                saver.WriteLine("TIME COLOR: " + Library.get_color_name(ShellEnvironment.time_color));
+                saver.WriteLine("TEXTEDIT LANGUAGE: " + ShellEnvironment.language);
+                saver.WriteLine("SCRIPT ENABLE: " + ShellEnvironment.script_enable);
+                saver.WriteLine("AUTO LOCK: " + ShellEnvironment.auto_lock);
+                saver.WriteLine("AUTO LOG: " + ShellEnvironment.auto_log);
+                saver.WriteLine("GENIUS ENABLE: " + ShellEnvironment.genius_enable);
+                saver.WriteLine("MAX GENIUS DATA: " + ShellEnvironment.max_genius_data);
+                saver.WriteLine("PRIVATE MODE: " + ShellEnvironment.private_mode);
+                saver.Close();
+                Console.WriteLine("> option: options saved!");
+            }
+            catch(Exception)
+            {
+                Console.WriteLine("> option: can't save options, access denied! (execute it with admin rights)");
+            }
+        }
+
+        static private void save_option(int refresh_timer, bool cmd_print_user, bool cmd_print_path, bool cmd_print_time, string language, bool script_enable, bool auto_lock, bool auto_log, bool genius_enable, int max_genius_data, bool private_mode, ConsoleColor user_color, ConsoleColor path_color, ConsoleColor time_color)
+        {
+            try
+            {
+                StreamWriter saver = new StreamWriter(ShellEnvironment.appdata_dir + "/option");
                 saver.WriteLine("UPDATE: " + refresh_timer + "ms");
                 saver.WriteLine("PRINT USER: " + cmd_print_user);
                 saver.WriteLine("PRINT DIRECTORY: " + cmd_print_path);
                 saver.WriteLine("PRINT TIME: " + cmd_print_time);
+                saver.WriteLine("USER COLOR: " + Library.get_color_name(user_color));
+                saver.WriteLine("PATH COLOR: " + Library.get_color_name(path_color));
+                saver.WriteLine("TIME COLOR: " + Library.get_color_name(time_color));
                 saver.WriteLine("TEXTEDIT LANGUAGE: " + language);
                 saver.WriteLine("SCRIPT ENABLE: " + script_enable);
                 saver.WriteLine("AUTO LOCK: " + auto_lock);
@@ -8109,7 +8233,7 @@ namespace cmd_Linux
                 saver.Close();
                 Console.WriteLine("> option: options saved!");
             }
-            catch(Exception)
+            catch (Exception)
             {
                 Console.WriteLine("> option: can't save options, access denied! (execute it with admin rights)");
             }
@@ -8666,7 +8790,7 @@ namespace cmd_Linux
             Console.Write("|___");
         }
 
-        static private bool evaluateExpression(string expression, string desktop_dir, string appdata_dir, ref bool working, ref bool superuser, ref long last_result, ref List<Genius_data> genius_data, ref bool script_enable, ref bool genius_enable, ref bool private_mode, ref int refresh_timer, ref bool auto_lock, ref bool auto_log, ref bool cmd_print_user, ref bool cmd_print_path, ref bool cmd_print_time, ref string[] previous_directory, ref int previous_directory_pointer, ref int max_genius_data, ref string language, ref List<Link> allLinks, ref NotificationManager notificationManager)
+        static private bool evaluateExpression(string expression)
         {
             bool negative = (expression.Length > 0 && expression[0] == '!');
             if (negative)
@@ -8696,7 +8820,7 @@ namespace cmd_Linux
                 }
             }
             else if (expression.Split(' ').Length > 0 && Static_data.is_original_cmd(expression.Split(' ')[0]))
-                return (Execution.execute_input(Interpreter.parse_input(expression, appdata_dir), desktop_dir, appdata_dir, ref working, ref superuser, ref last_result, ref genius_data, ref script_enable, ref genius_enable, ref private_mode, ref refresh_timer, ref auto_lock, ref auto_log, ref cmd_print_user, ref cmd_print_path, ref cmd_print_time, ref previous_directory, ref previous_directory_pointer, ref max_genius_data, ref language, ref allLinks, ref notificationManager) == (negative ? 1 : 0));
+                return (Execution.execute_input(Interpreter.parse_input(expression, ShellEnvironment.appdata_dir)) == (negative ? 1 : 0));
             
             return (negative);
         }

@@ -691,6 +691,172 @@ namespace cmd_Linux
             Console.Write((date.Hour < 10 ? "0" : "") + date.Hour + ":" + (date.Minute < 10 ? "0" : "") + date.Minute + ":" + (date.Second < 10 ? "0" : "") + date.Second);
         }
 
+        //COLOR
+
+        public static string get_color_name(ConsoleColor color)
+        {
+            switch (color)
+            {
+                case (ConsoleColor.Black):
+                    return ("Default");
+                case (ConsoleColor.Blue):
+                    return ("Blue");
+                case (ConsoleColor.Cyan):
+                    return ("Cyan");
+                case (ConsoleColor.DarkBlue):
+                    return ("Dark Blue");
+                case (ConsoleColor.DarkCyan):
+                    return ("Dark Cyan");
+                case (ConsoleColor.DarkGray):
+                    return ("Dark Gray");
+                case (ConsoleColor.DarkGreen):
+                    return ("Dark Green");
+                case (ConsoleColor.DarkMagenta):
+                    return ("Dark Magenta");
+                case (ConsoleColor.DarkRed):
+                    return ("Dark Red");
+                case (ConsoleColor.DarkYellow):
+                    return ("Dark Yellow");
+                case (ConsoleColor.Gray):
+                    return ("Gray");
+                case (ConsoleColor.Green):
+                    return ("Green");
+                case (ConsoleColor.Magenta):
+                    return ("Magenta");
+                case (ConsoleColor.Red):
+                    return ("Red");
+                case (ConsoleColor.White):
+                    return ("White");
+                case (ConsoleColor.Yellow):
+                    return ("Yellow");
+                default:
+                    return ("Unkown");
+            }
+        }
+
+        public static ConsoleColor get_color_name(string color)
+        {
+            switch (color)
+            {
+                case ("Default"):
+                    return (ConsoleColor.Black);
+                case ("Blue"):
+                    return (ConsoleColor.Blue);
+                case ("Cyan"):
+                    return (ConsoleColor.Cyan);
+                case ("Dark Blue"):
+                    return (ConsoleColor.DarkBlue);
+                case ("Dark Cyan"):
+                    return (ConsoleColor.DarkCyan);
+                case ("Dark Gray"):
+                    return (ConsoleColor.DarkGray);
+                case ("Dark Green"):
+                    return (ConsoleColor.DarkGreen);
+                case ("Dark Magenta"):
+                    return (ConsoleColor.DarkMagenta);
+                case ("Dark Red"):
+                    return (ConsoleColor.DarkRed);
+                case ("Dark Yellow"):
+                    return (ConsoleColor.DarkYellow);
+                case ("Gray"):
+                    return (ConsoleColor.Gray);
+                case ("Green"):
+                    return (ConsoleColor.Green);
+                case ("Magenta"):
+                    return (ConsoleColor.Magenta);
+                case ("Red"):
+                    return (ConsoleColor.Red);
+                case ("White"):
+                    return (ConsoleColor.White);
+                case ("Yellow"):
+                    return (ConsoleColor.Yellow);
+                default:
+                    return (ConsoleColor.Black);
+            }
+        }
+
+        public static ConsoleColor get_next_color(ConsoleColor color)
+        {
+            switch (color)
+            {
+                case (ConsoleColor.Black):
+                    return (ConsoleColor.Blue);
+                case (ConsoleColor.Blue):
+                    return (ConsoleColor.Cyan);
+                case (ConsoleColor.Cyan):
+                    return (ConsoleColor.DarkBlue);
+                case (ConsoleColor.DarkBlue):
+                    return (ConsoleColor.DarkCyan);
+                case (ConsoleColor.DarkCyan):
+                    return (ConsoleColor.DarkGray);
+                case (ConsoleColor.DarkGray):
+                    return (ConsoleColor.DarkGreen);
+                case (ConsoleColor.DarkGreen):
+                    return (ConsoleColor.DarkMagenta);
+                case (ConsoleColor.DarkMagenta):
+                    return (ConsoleColor.DarkRed);
+                case (ConsoleColor.DarkRed):
+                    return (ConsoleColor.DarkYellow);
+                case (ConsoleColor.DarkYellow):
+                    return (ConsoleColor.Gray);
+                case (ConsoleColor.Gray):
+                    return (ConsoleColor.Green);
+                case (ConsoleColor.Green):
+                    return (ConsoleColor.Magenta);
+                case (ConsoleColor.Magenta):
+                    return (ConsoleColor.Red);
+                case (ConsoleColor.Red):
+                    return (ConsoleColor.White);
+                case (ConsoleColor.White):
+                    return (ConsoleColor.Yellow);
+                case (ConsoleColor.Yellow):
+                    return (ConsoleColor.Black);
+                default:
+                    return (ConsoleColor.Black);
+            }
+        }
+
+        public static ConsoleColor get_prev_color(ConsoleColor color)
+        {
+            switch (color)
+            {
+                case (ConsoleColor.Black):
+                    return (ConsoleColor.Yellow);
+                case (ConsoleColor.Blue):
+                    return (ConsoleColor.Black);
+                case (ConsoleColor.Cyan):
+                    return (ConsoleColor.Blue);
+                case (ConsoleColor.DarkBlue):
+                    return (ConsoleColor.Cyan);
+                case (ConsoleColor.DarkCyan):
+                    return (ConsoleColor.DarkBlue);
+                case (ConsoleColor.DarkGray):
+                    return (ConsoleColor.DarkCyan);
+                case (ConsoleColor.DarkGreen):
+                    return (ConsoleColor.DarkGray);
+                case (ConsoleColor.DarkMagenta):
+                    return (ConsoleColor.DarkGreen);
+                case (ConsoleColor.DarkRed):
+                    return (ConsoleColor.DarkMagenta);
+                case (ConsoleColor.DarkYellow):
+                    return (ConsoleColor.DarkRed);
+                case (ConsoleColor.Gray):
+                    return (ConsoleColor.DarkYellow);
+                case (ConsoleColor.Green):
+                    return (ConsoleColor.Gray);
+                case (ConsoleColor.Magenta):
+                    return (ConsoleColor.Green);
+                case (ConsoleColor.Red):
+                    return (ConsoleColor.Magenta);
+                case (ConsoleColor.White):
+                    return (ConsoleColor.Red);
+                case (ConsoleColor.Yellow):
+                    return (ConsoleColor.White);
+                default:
+                    return (ConsoleColor.Black);
+            }
+        }
+
         //SECURITY
 
         private const int Keysize = 256;
@@ -849,6 +1015,19 @@ namespace cmd_Linux
                 Console.ResetColor();
             }   
             deleteFile(appdata_dir + "/reminder/" + getDateFileFormat(DateTime.Now));
+        }
+
+        public static void erase_script_line(string script_path)
+        {
+            List<string> script_content = Library.getFileContent(script_path);
+
+            if (script_content.Count <= 1)
+                Library.deleteFile(script_path);
+            else
+            {
+                script_content.RemoveAt(0);
+                Library.saveFile(script_path, script_content);
+            }
         }
     }
 }
