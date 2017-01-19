@@ -320,9 +320,9 @@ namespace cmd_Linux
             string genius = "";
             string command = "";
             string last_word = "";
-            int line_beginning = Console.CursorLeft;
-            int line = Console.CursorTop;
-            int max_cursor = Console.CursorTop;
+            int line_beginning = Console.CursorLeft; //line of the beginning (left)
+            int line = Console.CursorTop; //line of the beginning (top)
+            int max_cursor = Console.CursorTop; //max line reached (top)
             int input_pointer = 0;
             bool quote_mode = false;
             int delta_input = 0;
@@ -337,7 +337,7 @@ namespace cmd_Linux
             while (key_input.Key != ConsoleKey.Enter && ShellEnvironment.working)
             {
                 key_input = Console.ReadKey(true);
-                delta_input = update_input(ref command, key_input, ref genius, ref input_pointer, ref quote_mode, ref line, last_word, ref max_cursor);
+                delta_input = update_input(ref command, key_input, ref genius, ref input_pointer, ref quote_mode, ref line, last_word, ref max_cursor, line_beginning);
                 if(delta_input != 0 || key_input.Key == ConsoleKey.UpArrow || key_input.Key == ConsoleKey.DownArrow)
                 {
                     erase_genius_trace(genius, command.Length - input_pointer);
@@ -370,7 +370,7 @@ namespace cmd_Linux
             return (command);
         }
 
-        static int update_input(ref string command, ConsoleKeyInfo key_input, ref string genius, ref int input_pointer, ref bool quote_mode, ref int line, string current_input, ref int max_cursor)
+        static int update_input(ref string command, ConsoleKeyInfo key_input, ref string genius, ref int input_pointer, ref bool quote_mode, ref int line, string current_input, ref int max_cursor, int line_beginning)
         {
             Computer mycomputer = new Computer();
             input_pointer++;
@@ -584,7 +584,15 @@ namespace cmd_Linux
                 case (ConsoleKey.P):
                     if (key_input.Modifiers == ConsoleModifiers.Control)
                     {
+                        erase_genius_trace(genius, command.Length - input_pointer);
+                        display_update("", line_beginning, line, 0, -1 * delta, key_input);
+                        Console.WriteLine();
                         Execution.execute_input(new string[1][] { new string[1] { "ls" } });
+                        print_cmd_intro_line();
+                        line = Console.CursorTop;
+                        Console.Write(command);
+                        Interpreter.print_genius_cmd(genius, current_input, ref max_cursor);
+                        max_cursor = Console.CursorTop;
                         input_pointer--;
                         return (0);
                     }
